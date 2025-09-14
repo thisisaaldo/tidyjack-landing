@@ -160,6 +160,37 @@ app.get('/api/admin/photos/upload', requireAdmin, async (req, res) => {
   }
 });
 
+// Direct photo upload endpoint
+app.post('/api/admin/photos/direct-upload', requireAdmin, express.raw({ type: 'image/jpeg', limit: '10mb' }), async (req, res) => {
+  try {
+    const fs = require('fs').promises;
+    const path = require('path');
+    const uploadsDir = path.join(__dirname, 'uploads', 'tidyjacks-photos');
+    
+    // Ensure upload directory exists
+    await fs.mkdir(uploadsDir, { recursive: true });
+    
+    const photoBuffer = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body);
+    
+    // Generate filename from timestamp
+    const timestamp = Date.now();
+    const filename = `${timestamp}_${require('crypto').randomUUID()}.jpg`;
+    const filepath = path.join(uploadsDir, filename);
+    
+    // Save file
+    await fs.writeFile(filepath, photoBuffer);
+    
+    res.json({ 
+      success: true,
+      storagePath: `/tidyjacks-photos/${filename}`,
+      message: 'Photo uploaded successfully'
+    });
+  } catch (error) {
+    console.error('Direct photo upload error:', error);
+    res.status(500).json({ error: 'Failed to upload photo' });
+  }
+});
+
 app.post('/api/admin/photos', requireAdmin, async (req, res) => {
   try {
     const { bookingId, photoType, storagePath } = req.body;
@@ -167,25 +198,40 @@ app.post('/api/admin/photos', requireAdmin, async (req, res) => {
     if (!bookingId || !photoType || !storagePath) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+    
+    if (!['before', 'after'].includes(photoType)) {
+      return res.status(400).json({ error: 'Photo type must be "before" or "after"' });
+    }
+
+    // Find the booking by string ID to get the numeric ID
+    let numericBookingId;
+    if (typeof bookingId === 'string' && bookingId.startsWith('TJ')) {
+      const booking = await BookingStorage.findByBookingId(bookingId);
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
+      numericBookingId = booking.id;
+    } else {
+      numericBookingId = parseInt(bookingId);
+    }
 
     const objectStorageService = new ObjectStorageService();
     const fileUrl = objectStorageService.generatePhotoURL(storagePath);
     
     const photo = await PhotoStorage.create({
-      booking_id: parseInt(bookingId),
+      booking_id: numericBookingId,
       photo_type: photoType,
       file_path: storagePath,
       file_url: fileUrl
     });
 
-    // Check if both photos exist
-    const allPhotos = await PhotoStorage.getByBookingId(parseInt(bookingId));
+    // Check if both photos exist using numeric ID
+    const allPhotos = await PhotoStorage.getByBookingId(numericBookingId);
     const hasCompleteSet = allPhotos.length >= 2 && 
       allPhotos.some(p => p.photo_type === 'before') && 
       allPhotos.some(p => p.photo_type === 'after');
 
     res.json({ 
-      success: true, 
       photo,
       hasCompleteSet
     });
@@ -206,7 +252,7 @@ app.get('/api/admin/photos/:bookingId', requireAdmin, async (req, res) => {
   }
 });
 
-// Serve photos (using middleware approach that bypasses path-to-regexp)
+// Serve photos (simplified local file serving)
 app.use('/api/photos', async (req, res, next) => {
   // Only handle GET requests for photo serving
   if (req.method !== 'GET') {
@@ -214,6 +260,9 @@ app.use('/api/photos', async (req, res, next) => {
   }
 
   try {
+    const fs = require('fs').promises;
+    const path = require('path');
+    
     // req.url contains the path after /api/photos mount point
     const filePath = req.url.startsWith('/') ? req.url : '/' + req.url;
     
@@ -222,12 +271,21 @@ app.use('/api/photos', async (req, res, next) => {
     if (!filePath.startsWith(allowedPrefix)) {
       return res.status(403).json({ error: 'Access denied' });
     }
+
+    // Convert URL path to actual file path
+    const filename = path.basename(filePath);
+    const fullPath = path.join(__dirname, 'uploads', 'tidyjacks-photos', filename);
     
-    const objectStorageService = new ObjectStorageService();
-    const file = await objectStorageService.getPhotoFile(filePath);
-    await objectStorageService.downloadPhoto(file, res);
+    // Check if file exists
+    await fs.access(fullPath);
+    
+    // Serve the file
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
+    res.sendFile(fullPath);
+    
   } catch (error) {
-    if (error instanceof ObjectNotFoundError) {
+    if (error.code === 'ENOENT') {
       return res.status(404).json({ error: 'Photo not found' });
     }
     console.error('Photo serve error:', error);
