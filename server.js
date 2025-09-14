@@ -102,16 +102,17 @@ app.post('/api/booking', async (req, res) => {
 
     // Send confirmation email to customer
     const customerEmailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background: linear-gradient(135deg, #2563eb, #9333ea); padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">🐾 TidyJack</h1>
-          <p style="color: white; margin: 10px 0 0 0; font-size: 18px;">Booking Confirmation</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+        <div style="background: #2563eb; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">TidyJack</h1>
+          <p style="color: white; margin: 10px 0 0 0; font-size: 18px;">Professional Cleaning Services</p>
+          <p style="color: white; margin: 5px 0 0 0; font-size: 16px;">Booking Confirmation</p>
         </div>
         
         <div style="background: white; padding: 30px; border-radius: 12px; border: 1px solid #e5e5e5;">
-          <h2 style="color: #333; margin-top: 0;">G'day ${name}!</h2>
+          <h2 style="color: #333; margin-top: 0;">Dear ${name},</h2>
           <p style="color: #666; font-size: 16px; line-height: 1.6;">
-            Thanks for choosing TidyJack! We've received your booking and will be in touch soon to confirm the details.
+            Thank you for choosing TidyJack Professional Cleaning Services. We have received your booking request and will contact you within 24 hours to confirm the details.
           </p>
           
           <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -125,25 +126,28 @@ app.post('/api/booking', async (req, res) => {
             ${notes !== 'None' ? `<p><strong>Special Notes:</strong> ${notes}</p>` : ''}
           </div>
           
-          <div style="background: #ecfdf5; border: 1px solid #10b981; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0; color: #065f46;">
-              <strong>What happens next?</strong><br>
-              Our team will review your booking and contact you within 24 hours to confirm availability and provide a final quote.
+          <div style="background: #f0f9ff; border: 1px solid #0ea5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; color: #0c4a6e;">
+              <strong>Next Steps:</strong><br>
+              Our team will review your booking request and contact you within 24 hours to confirm availability and provide a detailed quote.
             </p>
           </div>
           
-          <p style="color: #666; font-size: 14px; margin-top: 30px;">
-            Have questions? Reply to this email or contact us anytime.<br>
-            <strong>TidyJack - Australia's trusted cleaning network</strong>
-          </p>
+          <div style="border-top: 1px solid #e5e5e5; padding-top: 20px; margin-top: 30px;">
+            <p style="color: #666; font-size: 14px; margin: 0;">
+              <strong>TidyJack Professional Cleaning Services</strong><br>
+              Email: hellotidyjack@gmail.com<br>
+              Have questions? Please reply to this email.
+            </p>
+          </div>
         </div>
       </div>
     `;
 
     const customerEmailText = `
-G'day ${name}!
+Dear ${name},
 
-Thanks for choosing TidyJack! We've received your booking and will be in touch soon to confirm the details.
+Thank you for choosing TidyJack Professional Cleaning Services. We have received your booking request and will contact you within 24 hours to confirm the details.
 
 BOOKING DETAILS:
 - Booking ID: ${bookingDetails.bookingId}
@@ -154,18 +158,20 @@ BOOKING DETAILS:
 - Address: ${address}
 ${notes !== 'None' ? `- Special Notes: ${notes}` : ''}
 
-WHAT HAPPENS NEXT:
-Our team will review your booking and contact you within 24 hours to confirm availability and provide a final quote.
+NEXT STEPS:
+Our team will review your booking request and contact you within 24 hours to confirm availability and provide a detailed quote.
 
-Have questions? Reply to this email or contact us anytime.
-
-TidyJack - Australia's trusted cleaning network
+TidyJack Professional Cleaning Services
+Email: hellotidyjack@gmail.com
+Have questions? Please reply to this email.
     `;
 
     // Send notification email to business owner
     const businessEmailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #2563eb;">🎉 New Booking Received!</h2>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+        <div style="background: #2563eb; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+          <h2 style="color: white; margin: 0;">New TidyJack Booking Received</h2>
+        </div>
         
         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e5e5e5;">
           <h3>Customer Information</h3>
@@ -193,7 +199,7 @@ TidyJack - Australia's trusted cleaning network
     `;
 
     const businessEmailText = `
-🎉 NEW BOOKING RECEIVED!
+NEW TIDYJACK BOOKING RECEIVED
 
 CUSTOMER INFORMATION:
 - Name: ${name}
@@ -216,7 +222,7 @@ Please contact the customer within 24 hours to confirm availability.
     // Send customer confirmation email
     await sendEmail({
       to: email,
-      subject: `🐾 TidyJack - Booking Confirmation #${bookingDetails.bookingId}`,
+      subject: `TidyJack Booking Confirmation - Reference ${bookingDetails.bookingId}`,
       html: customerEmailHtml,
       text: customerEmailText,
     });
@@ -226,7 +232,7 @@ Please contact the customer within 24 hours to confirm availability.
     
     await sendEmail({
       to: businessEmail,
-      subject: `🎉 New TidyJack Booking: ${serviceName} - ${name}`,
+      subject: `New TidyJack Booking: ${serviceName} - ${name}`,
       html: businessEmailHtml,
       text: businessEmailText,
     });
