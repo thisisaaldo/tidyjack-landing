@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react'
+import { APIProvider } from '@vis.gl/react-google-maps'
 import PaymentForm from './PaymentForm'
+import GooglePlacesAutocomplete from './GooglePlacesAutocomplete'
 
 export default function BookingForm() {
+  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+
+  if (!googleMapsApiKey) {
+    console.warn('Google Maps API key not found. Address autocomplete will not work.')
+  }
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -274,16 +281,31 @@ export default function BookingForm() {
         <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
           Address
         </label>
-        <input
-          type="text"
-          id="address"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="123 Main St, Sydney NSW 2000"
-          required
-        />
+        {googleMapsApiKey ? (
+          <APIProvider apiKey={googleMapsApiKey}>
+            <GooglePlacesAutocomplete
+              value={formData.address}
+              onChange={(value) => setFormData({...formData, address: value})}
+              onPlaceSelect={(place) => {
+                console.log('Selected place:', place)
+              }}
+              placeholder="Start typing your address..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+          </APIProvider>
+        ) : (
+          <input
+            type="text"
+            id="address"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="123 Main St, Sydney NSW 2000"
+            required
+          />
+        )}
       </div>
 
       <div>
