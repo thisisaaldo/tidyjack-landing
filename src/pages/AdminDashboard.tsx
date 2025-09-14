@@ -175,21 +175,148 @@ const AdminDashboard = () => {
     }
   };
 
+  // Data sanitization and validation functions
+  const sanitizeBookingData = (booking: any): Booking => {
+    try {
+      // Ensure all required fields are present and properly typed
+      return {
+        id: typeof booking.id === 'number' ? booking.id : 0,
+        booking_id: String(booking.booking_id || ''),
+        service_type: String(booking.service_type || ''),
+        service_name: String(booking.service_name || ''),
+        total_amount_cents: typeof booking.total_amount_cents === 'number' ? booking.total_amount_cents : 0,
+        booking_date: String(booking.booking_date || ''),
+        time_slot: String(booking.time_slot || ''),
+        notes: booking.notes ? String(booking.notes) : undefined,
+        payment_type: String(booking.payment_type || ''),
+        amount_paid_cents: typeof booking.amount_paid_cents === 'number' ? booking.amount_paid_cents : 0,
+        payment_status: String(booking.payment_status || 'unpaid'),
+        stripe_payment_intent_id: booking.stripe_payment_intent_id ? String(booking.stripe_payment_intent_id) : undefined,
+        created_at: String(booking.created_at || ''),
+        customer: booking.customer ? {
+          id: typeof booking.customer.id === 'number' ? booking.customer.id : 0,
+          name: String(booking.customer.name || ''),
+          email: String(booking.customer.email || ''),
+          phone: booking.customer.phone ? String(booking.customer.phone) : undefined,
+          address: booking.customer.address ? String(booking.customer.address) : undefined,
+          created_at: String(booking.customer.created_at || '')
+        } : undefined,
+        remaining_balance_cents: typeof booking.remaining_balance_cents === 'number' ? booking.remaining_balance_cents : undefined,
+        remaining_balance: typeof booking.remaining_balance === 'number' ? booking.remaining_balance : undefined
+      };
+    } catch (sanitizeError) {
+      console.warn('Error sanitizing booking data:', sanitizeError, booking);
+      // Return a safe default booking object
+      return {
+        id: 0,
+        booking_id: 'unknown',
+        service_type: 'unknown',
+        service_name: 'Unknown Service',
+        total_amount_cents: 0,
+        booking_date: new Date().toISOString().split('T')[0],
+        time_slot: 'unknown',
+        payment_type: 'unknown',
+        amount_paid_cents: 0,
+        payment_status: 'unpaid',
+        created_at: new Date().toISOString()
+      };
+    }
+  };
+
+  const sanitizeDashboardData = (data: any): DashboardStats => {
+    try {
+      // Validate and sanitize all dashboard data
+      const sanitizedData: DashboardStats = {
+        totalCustomers: typeof data.totalCustomers === 'number' ? data.totalCustomers : 0,
+        totalBookings: typeof data.totalBookings === 'number' ? data.totalBookings : 0,
+        pendingPayments: typeof data.pendingPayments === 'number' ? data.pendingPayments : 0,
+        totalRevenue: typeof data.totalRevenue === 'number' ? data.totalRevenue : 0,
+        pendingRevenue: typeof data.pendingRevenue === 'number' ? data.pendingRevenue : 0,
+        recentBookings: []
+      };
+
+      // Sanitize recent bookings array
+      if (Array.isArray(data.recentBookings)) {
+        sanitizedData.recentBookings = data.recentBookings.map(sanitizeBookingData);
+      }
+
+      return sanitizedData;
+    } catch (sanitizeError) {
+      console.warn('Error sanitizing dashboard data:', sanitizeError, data);
+      // Return safe default data
+      return {
+        totalCustomers: 0,
+        totalBookings: 0,
+        pendingPayments: 0,
+        totalRevenue: 0,
+        pendingRevenue: 0,
+        recentBookings: []
+      };
+    }
+  };
+
   // Load dashboard data
   const loadDashboardData = async (token?: string) => {
     setLoading(true);
     setError('');
     
     try {
-      const dashStats = await apiCall('/dashboard', token);
-      setDashboardData(dashStats);
+      console.log('Loading dashboard data...');
+      const rawData = await apiCall('/dashboard', token);
+      console.log('Raw dashboard data received:', rawData);
+      
+      // Sanitize the data before setting state
+      const sanitizedData = sanitizeDashboardData(rawData);
+      console.log('Sanitized dashboard data:', sanitizedData);
+      
+      setDashboardData(sanitizedData);
     } catch (err) {
+      console.error('Dashboard loading error:', err);
       setError(`Failed to load dashboard data: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
   };
 
+  // Safe date parsing function for mobile browsers
+  const formatSafeDate = (dateString: string): string => {
+    try {
+      if (!dateString) return 'Unknown date';
+      
+      // Handle various date formats from PostgreSQL
+      let parsedDate: Date;
+      
+      // Try parsing as ISO date first (most reliable)
+      if (dateString.includes('T')) {
+        parsedDate = new Date(dateString);
+      } else {
+        // For PostgreSQL date format (YYYY-MM-DD), create explicit Date
+        const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+        if (year && month && day) {
+          parsedDate = new Date(year, month - 1, day); // month is 0-indexed
+        } else {
+          // Fallback: try direct parsing
+          parsedDate = new Date(dateString);
+        }
+      }
+      
+      // Check if date is valid
+      if (isNaN(parsedDate.getTime())) {
+        console.warn('Invalid date format:', dateString);
+        return 'Invalid date';
+      }
+      
+      // Use safe locale string formatting
+      return parsedDate.toLocaleDateString('en-AU', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (dateError) {
+      console.warn('Date parsing error:', dateError, dateString);
+      return 'Date error';
+    }
+  };
 
   // Get payment status badge color
   const getPaymentStatusColor = (status: string) => {
@@ -397,7 +524,7 @@ const AdminDashboard = () => {
                                 <div>
                                   <p className="text-sm font-medium text-gray-900">{booking.booking_id}</p>
                                   <p className="text-sm text-gray-500">{booking.service_name}</p>
-                                  <p className="text-xs text-gray-400">Date: {new Date(booking.booking_date).toLocaleDateString()}</p>
+                                  <p className="text-xs text-gray-400">Date: {formatSafeDate(booking.booking_date)}</p>
                                 </div>
                                 <button
                                   onClick={() => {
