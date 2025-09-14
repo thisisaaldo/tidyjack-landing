@@ -1101,10 +1101,22 @@ app.post('/api/admin/photos', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Photo type must be "before" or "after"' });
     }
 
+    // Find the booking by string ID to get the numeric ID
+    let numericBookingId;
+    if (typeof bookingId === 'string' && bookingId.startsWith('TJ')) {
+      const booking = await BookingStorage.findByBookingId(bookingId);
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
+      numericBookingId = booking.id;
+    } else {
+      numericBookingId = parseInt(bookingId);
+    }
+
     const objectStorageService = new ObjectStorageService();
     
     const photoData = {
-      booking_id: parseInt(bookingId),
+      booking_id: numericBookingId,
       photo_type: photoType,
       file_path: storagePath, // Save the storage path
       file_url: objectStorageService.generatePhotoURL(storagePath)
@@ -1112,12 +1124,15 @@ app.post('/api/admin/photos', requireAdmin, async (req, res) => {
 
     const photo = await PhotoStorage.create(photoData);
     
-    // Check if we now have both before and after photos
-    const photoSet = await PhotoStorage.getBookingPhotos(bookingId);
+    // Check if we now have both before and after photos using numeric ID
+    const allPhotos = await PhotoStorage.getByBookingId(numericBookingId);
+    const hasCompleteSet = allPhotos.length >= 2 && 
+      allPhotos.some(p => p.photo_type === 'before') && 
+      allPhotos.some(p => p.photo_type === 'after');
     
     res.json({ 
       photo,
-      hasCompleteSet: photoSet.hasCompleteSet
+      hasCompleteSet
     });
   } catch (error) {
     console.error('Photo save error:', error);
