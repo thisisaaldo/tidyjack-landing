@@ -379,8 +379,8 @@ app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) =
           <div style="border-top: 1px solid #e5e5e5; padding-top: 20px; margin-top: 30px;">
             <p style="color: #666; font-size: 14px; margin: 0;">
               <strong>TidyJack Professional Cleaning Services</strong><br>
-              Email: hellotidyjack@gmail.com<br>
-              Have questions? Please reply to this email.
+              <strong>📧 Contact Us Directly:</strong> <a href="mailto:hellotidyjack@gmail.com" style="color: #2563eb;">hellotidyjack@gmail.com</a><br>
+              Have questions or need to discuss your booking? Email us directly and we'll respond quickly!
             </p>
           </div>
         </div>
@@ -425,8 +425,8 @@ NEXT STEPS:
 Our team will review your booking request and contact you within 24 hours to confirm availability and provide a detailed quote.
 
 TidyJack Professional Cleaning Services
-Email: hellotidyjack@gmail.com
-Have questions? Please reply to this email.
+📧 CONTACT US DIRECTLY: hellotidyjack@gmail.com
+Have questions or need to discuss your booking? Email us directly and we'll respond quickly!
     `;
 
     // Send notification email to business owner
@@ -536,7 +536,6 @@ Please contact the customer within 24 hours to confirm availability.
     // Send customer confirmation email
     await sendEmail({
       to: email,
-      replyTo: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
       subject: `TidyJack Booking Confirmation - Reference ${bookingDetails.bookingId}`,
       html: customerEmailHtml,
       text: customerEmailText,
@@ -547,7 +546,6 @@ Please contact the customer within 24 hours to confirm availability.
     
     await sendEmail({
       to: businessEmail,
-      replyTo: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
       subject: `New TidyJack Booking: ${serviceName} - ${name}`,
       html: businessEmailHtml,
       text: businessEmailText,
@@ -717,7 +715,6 @@ async function sendPaymentConfirmationEmail(paymentIntent, status) {
       // Send final confirmation to customer
       await sendEmail({
         to: metadata.customerEmail,
-        replyTo: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
         subject: `Payment Confirmed - TidyJack Booking ${metadata.bookingType}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -731,6 +728,13 @@ async function sendPaymentConfirmationEmail(paymentIntent, status) {
               <p><strong>Service:</strong> ${metadata.bookingType}</p>
               ${metadata.customerName ? `<p><strong>Customer:</strong> ${metadata.customerName}</p>` : ''}
               <p>Thank you for choosing TidyJack Professional Cleaning Services!</p>
+              
+              <div style="border-top: 1px solid #e5e5e5; padding-top: 15px; margin-top: 20px;">
+                <p style="color: #666; font-size: 14px; margin: 0;">
+                  <strong>📧 Contact Us Directly:</strong> <a href="mailto:hellotidyjack@gmail.com" style="color: #2563eb;">hellotidyjack@gmail.com</a><br>
+                  Have questions about your payment or service? Email us directly and we'll respond quickly!
+                </p>
+              </div>
             </div>
           </div>
         `,
@@ -744,6 +748,9 @@ Service: ${metadata.bookingType}
 ${metadata.customerName ? `Customer: ${metadata.customerName}` : ''}
 
 Thank you for choosing TidyJack Professional Cleaning Services!
+
+📧 CONTACT US DIRECTLY: hellotidyjack@gmail.com
+Have questions about your payment or service? Email us directly and we'll respond quickly!
         `
       });
 
@@ -751,7 +758,6 @@ Thank you for choosing TidyJack Professional Cleaning Services!
       const businessEmail = process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com';
       await sendEmail({
         to: businessEmail,
-        replyTo: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
         subject: `Payment Confirmed - ${metadata.customerName || 'Customer'} - $${amount} AUD`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -769,7 +775,6 @@ Thank you for choosing TidyJack Professional Cleaning Services!
       // Send failure notification to customer
       await sendEmail({
         to: metadata.customerEmail,
-        replyTo: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
         subject: `Payment Issue - TidyJack Booking ${metadata.bookingType}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
