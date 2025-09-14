@@ -123,7 +123,7 @@ function App() {
 
         {/* Areas */}
         <section id="areas" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Australian Destination</h2>
+          <h2 className="font-display text-2xl font-semibold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Australian Locations</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 reveal-children">
             {[
               { city: 'Sydney', cityAbbr: 'SYD', stateAbbr: 'NSW', state: 'New South Wales' },
