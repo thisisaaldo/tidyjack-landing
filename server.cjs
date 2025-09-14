@@ -4,7 +4,8 @@ const path = require('path');
 const Stripe = require('stripe');
 
 // Import database storage (CommonJS)
-const { CustomerStorage, BookingStorage } = require('./server/storage.cjs');
+const { CustomerStorage, BookingStorage, PhotoStorage } = require('./server/storage.cjs');
+const { ObjectStorageService, ObjectNotFoundError } = require('./server/objectStorage.cjs');
 
 const app = express();
 const PORT = 3001; // Use a different port from frontend
@@ -1034,6 +1035,221 @@ app.put('/api/admin/payment/update', requireAdmin, rateLimit, async (req, res) =
     res.status(500).json({ error: 'Failed to update payment status' });
   }
 });
+
+// PHOTO API ROUTES
+// ===========================================
+
+// Get upload URL for photo
+app.post('/api/photos/upload', requireAdmin, async (req, res) => {
+  try {
+    const objectStorageService = new ObjectStorageService();
+    const uploadURL = await objectStorageService.getPhotoUploadURL();
+    res.json({ uploadURL });
+  } catch (error) {
+    console.error('Photo upload URL error:', error);
+    res.status(500).json({ error: 'Failed to get upload URL' });
+  }
+});
+
+// Save photo metadata after upload
+app.post('/api/photos', requireAdmin, async (req, res) => {
+  try {
+    const { bookingId, photoType, fileUrl } = req.body;
+    
+    if (!bookingId || !photoType || !fileUrl) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    if (!['before', 'after'].includes(photoType)) {
+      return res.status(400).json({ error: 'Photo type must be "before" or "after"' });
+    }
+
+    // Extract file path from URL
+    const objectStorageService = new ObjectStorageService();
+    const filePath = fileUrl.replace(/^https?:\/\/[^\/]+/, ''); // Remove domain
+    
+    const photoData = {
+      booking_id: parseInt(bookingId),
+      photo_type: photoType,
+      file_path: filePath,
+      file_url: objectStorageService.generatePhotoURL(filePath)
+    };
+
+    const photo = await PhotoStorage.create(photoData);
+    
+    // Check if we now have both before and after photos
+    const photoSet = await PhotoStorage.getBookingPhotos(bookingId);
+    
+    res.json({ 
+      photo,
+      hasCompleteSet: photoSet.hasCompleteSet
+    });
+  } catch (error) {
+    console.error('Photo save error:', error);
+    res.status(500).json({ error: 'Failed to save photo' });
+  }
+});
+
+// Get photos for a booking
+app.get('/api/photos/booking/:bookingId', requireAdmin, async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const photoSet = await PhotoStorage.getBookingPhotos(bookingId);
+    res.json(photoSet);
+  } catch (error) {
+    console.error('Get photos error:', error);
+    res.status(500).json({ error: 'Failed to get photos' });
+  }
+});
+
+// Serve photos
+app.get('/api/photos/*', async (req, res) => {
+  try {
+    const filePath = req.path;
+    const objectStorageService = new ObjectStorageService();
+    const file = await objectStorageService.getPhotoFile(filePath);
+    await objectStorageService.downloadPhoto(file, res);
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) {
+      return res.status(404).json({ error: 'Photo not found' });
+    }
+    console.error('Photo serve error:', error);
+    res.status(500).json({ error: 'Failed to serve photo' });
+  }
+});
+
+// Send before/after photos to customer
+app.post('/api/photos/send-email', requireAdmin, async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+    
+    if (!bookingId) {
+      return res.status(400).json({ error: 'Booking ID is required' });
+    }
+
+    // Get booking and customer details
+    const booking = await BookingStorage.getById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    const customer = await CustomerStorage.getById(booking.customer_id);
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+
+    // Get photos
+    const photoSet = await PhotoStorage.getBookingPhotos(bookingId);
+    
+    if (!photoSet.hasCompleteSet) {
+      return res.status(400).json({ 
+        error: 'Both before and after photos are required to send email',
+        hasCompleteSet: false,
+        photos: photoSet
+      });
+    }
+
+    // Send email with photos
+    const emailSent = await sendBeforeAfterEmail(customer, booking, photoSet);
+    
+    if (emailSent) {
+      res.json({ success: true, message: 'Photos sent to customer successfully' });
+    } else {
+      res.status(500).json({ error: 'Failed to send email' });
+    }
+  } catch (error) {
+    console.error('Send photos email error:', error);
+    res.status(500).json({ error: 'Failed to send photos to customer' });
+  }
+});
+
+// Email service for before/after photos
+async function sendBeforeAfterEmail(customer, booking, photoSet) {
+  try {
+    const { sendReplit } = require('replitmail');
+    
+    // Get the domain for photo URLs
+    const domain = process.env.REPLIT_DEV_DOMAIN || 'localhost:3001';
+    const protocol = domain.includes('localhost') ? 'http' : 'https';
+    
+    const beforePhotoUrl = `${protocol}://${domain}${photoSet.before.file_url}`;
+    const afterPhotoUrl = `${protocol}://${domain}${photoSet.after.file_url}`;
+
+    const subject = `🧽✨ TidyJacks Cleaning Results - ${booking.service_name}`;
+    
+    const emailContent = `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; color: #333;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 28px;">🐾 TidyJacks Cleaning Results</h1>
+          <p style="margin: 10px 0 0; font-size: 16px; opacity: 0.9;">Your windows are sparkling clean!</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px;">
+          <h2 style="color: #333; margin-bottom: 20px;">Hi ${customer.name}! 👋</h2>
+          
+          <p style="line-height: 1.6; margin-bottom: 20px;">
+            We've just finished cleaning your windows and wanted to share the amazing transformation! 
+            Check out these before and after photos:
+          </p>
+          
+          <div style="background: white; padding: 25px; border-radius: 12px; margin: 25px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="color: #667eea; margin-bottom: 15px; text-align: center;">📸 Cleaning Results</h3>
+            
+            <div style="display: table; width: 100%; border-collapse: collapse;">
+              <div style="display: table-row;">
+                <div style="display: table-cell; width: 50%; padding: 10px; vertical-align: top;">
+                  <h4 style="text-align: center; color: #666; margin-bottom: 10px;">Before 😔</h4>
+                  <img src="${beforePhotoUrl}" alt="Before cleaning" style="width: 100%; max-width: 250px; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: block; margin: 0 auto;" />
+                </div>
+                <div style="display: table-cell; width: 50%; padding: 10px; vertical-align: top;">
+                  <h4 style="text-align: center; color: #666; margin-bottom: 10px;">After ✨</h4>
+                  <img src="${afterPhotoUrl}" alt="After cleaning" style="width: 100%; max-width: 250px; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: block; margin: 0 auto;" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea;">
+            <h3 style="margin: 0 0 10px; color: #333;">Service Details:</h3>
+            <p style="margin: 5px 0; color: #666;"><strong>Service:</strong> ${booking.service_name}</p>
+            <p style="margin: 5px 0; color: #666;"><strong>Date:</strong> ${new Date(booking.booking_date).toLocaleDateString()}</p>
+            <p style="margin: 5px 0; color: #666;"><strong>Booking ID:</strong> ${booking.booking_id}</p>
+          </div>
+
+          <p style="line-height: 1.6; margin: 25px 0;">
+            We hope you're thrilled with the results! Your windows now have that crystal-clear shine 
+            that makes your home look its absolute best. ✨
+          </p>
+          
+          <div style="background: #e8f2ff; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center;">
+            <h3 style="color: #2c5282; margin-bottom: 15px;">🌟 Thank you for choosing TidyJacks!</h3>
+            <p style="color: #2c5282; margin: 5px 0;">Questions about your service? Reply to this email</p>
+            <p style="color: #2c5282; margin: 5px 0;">Ready to book again? Visit <a href="https://www.tidyjacks.com" style="color: #667eea; text-decoration: none; font-weight: bold;">www.tidyjacks.com</a></p>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+            <p style="color: #666; font-size: 14px; margin: 0;">
+              Best regards,<br>
+              <strong style="color: #667eea;">The TidyJacks Team</strong> 🐾
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const result = await sendReplit({
+      to: customer.email,
+      subject: subject,
+      html: emailContent
+    });
+
+    console.log(`Before/after photos email sent to ${customer.email} for booking ${booking.booking_id}`);
+    return true;
+  } catch (error) {
+    console.error('Error sending before/after email:', error);
+    return false;
+  }
+}
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
