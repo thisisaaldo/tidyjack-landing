@@ -24,7 +24,7 @@ interface CheckoutFormProps {
   clientSecret: string;
 }
 
-const CheckoutForm = ({ amount, onPaymentSuccess, onPaymentError, clientSecret }: CheckoutFormProps) => {
+const CheckoutForm = ({ amount, onPaymentSuccess, onPaymentError }: CheckoutFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);

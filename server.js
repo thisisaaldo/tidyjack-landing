@@ -535,7 +535,6 @@ Please contact the customer within 24 hours to confirm availability.
 
     // Send customer confirmation email
     await sendEmail({
-      from: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
       to: email,
       subject: `TidyJack Booking Confirmation - Reference ${bookingDetails.bookingId}`,
       html: customerEmailHtml,
@@ -546,7 +545,6 @@ Please contact the customer within 24 hours to confirm availability.
     const businessEmail = process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com';
     
     await sendEmail({
-      from: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
       to: businessEmail,
       subject: `New TidyJack Booking: ${serviceName} - ${name}`,
       html: businessEmailHtml,
@@ -716,7 +714,6 @@ async function sendPaymentConfirmationEmail(paymentIntent, status) {
     if (status === 'succeeded') {
       // Send final confirmation to customer
       await sendEmail({
-        from: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
         to: metadata.customerEmail,
         subject: `Payment Confirmed - TidyJack Booking ${metadata.bookingType}`,
         html: `
@@ -750,7 +747,6 @@ Thank you for choosing TidyJack Professional Cleaning Services!
       // Send notification to business
       const businessEmail = process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com';
       await sendEmail({
-        from: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
         to: businessEmail,
         subject: `Payment Confirmed - ${metadata.customerName || 'Customer'} - $${amount} AUD`,
         html: `
@@ -768,7 +764,6 @@ Thank you for choosing TidyJack Professional Cleaning Services!
     } else if (status === 'failed') {
       // Send failure notification to customer
       await sendEmail({
-        from: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
         to: metadata.customerEmail,
         subject: `Payment Issue - TidyJack Booking ${metadata.bookingType}`,
         html: `

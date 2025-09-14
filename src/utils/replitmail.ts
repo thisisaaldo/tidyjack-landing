@@ -2,7 +2,6 @@ import { z } from "zod";
 
 // Zod schema matching the backend implementation
 export const zSmtpMessage = z.object({
-  from: z.string().email().optional().describe("Sender email address"),
   to: z
     .union([z.string().email(), z.array(z.string().email())])
     .describe("Recipient email address(es)"),
@@ -64,7 +63,6 @@ export async function sendEmail(message: SmtpMessage): Promise<{
         "X_REPLIT_TOKEN": authToken,
       },
       body: JSON.stringify({
-        from: message.from,
         to: message.to,
         cc: message.cc,
         subject: message.subject,
