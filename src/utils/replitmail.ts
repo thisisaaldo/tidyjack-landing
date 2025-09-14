@@ -5,6 +5,7 @@ export const zSmtpMessage = z.object({
   to: z
     .union([z.string().email(), z.array(z.string().email())])
     .describe("Recipient email address(es)"),
+  replyTo: z.string().email().optional().describe("Reply-to email address"),
   cc: z
     .union([z.string().email(), z.array(z.string().email())])
     .optional()
@@ -65,6 +66,7 @@ export async function sendEmail(message: SmtpMessage): Promise<{
       body: JSON.stringify({
         to: message.to,
         cc: message.cc,
+        replyTo: message.replyTo,
         subject: message.subject,
         text: message.text,
         html: message.html,

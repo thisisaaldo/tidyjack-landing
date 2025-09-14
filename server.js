@@ -536,6 +536,7 @@ Please contact the customer within 24 hours to confirm availability.
     // Send customer confirmation email
     await sendEmail({
       to: email,
+      replyTo: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
       subject: `TidyJack Booking Confirmation - Reference ${bookingDetails.bookingId}`,
       html: customerEmailHtml,
       text: customerEmailText,
@@ -546,6 +547,7 @@ Please contact the customer within 24 hours to confirm availability.
     
     await sendEmail({
       to: businessEmail,
+      replyTo: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
       subject: `New TidyJack Booking: ${serviceName} - ${name}`,
       html: businessEmailHtml,
       text: businessEmailText,
@@ -715,6 +717,7 @@ async function sendPaymentConfirmationEmail(paymentIntent, status) {
       // Send final confirmation to customer
       await sendEmail({
         to: metadata.customerEmail,
+        replyTo: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
         subject: `Payment Confirmed - TidyJack Booking ${metadata.bookingType}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -748,6 +751,7 @@ Thank you for choosing TidyJack Professional Cleaning Services!
       const businessEmail = process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com';
       await sendEmail({
         to: businessEmail,
+        replyTo: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
         subject: `Payment Confirmed - ${metadata.customerName || 'Customer'} - $${amount} AUD`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -765,6 +769,7 @@ Thank you for choosing TidyJack Professional Cleaning Services!
       // Send failure notification to customer
       await sendEmail({
         to: metadata.customerEmail,
+        replyTo: process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com',
         subject: `Payment Issue - TidyJack Booking ${metadata.bookingType}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
