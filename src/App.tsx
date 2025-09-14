@@ -1,8 +1,16 @@
 import React from 'react'
 import BookingForm from './components/BookingForm'
 import HeroDog from './components/HeroDog'
+import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
+  // Check if current path is admin
+  const isAdminPath = window.location.pathname === '/admin';
+  
+  if (isAdminPath) {
+    return <AdminDashboard />;
+  }
+
   return (
     <div className="font-sans min-h-screen">
       <header className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur">

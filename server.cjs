@@ -3,6 +3,9 @@ const cors = require('cors');
 const path = require('path');
 const Stripe = require('stripe');
 
+// Import database storage (CommonJS)
+const { CustomerStorage, BookingStorage } = require('./server/storage.cjs');
+
 const app = express();
 const PORT = 3001; // Use a different port from frontend
 
@@ -553,6 +556,76 @@ Please contact the customer within 24 hours to confirm availability.
       text: businessEmailText,
     });
 
+    // ========================================
+    // CRITICAL: SAVE BOOKING TO DATABASE
+    // ========================================
+    try {
+      // Create or find customer
+      let customer = await CustomerStorage.findByEmail(email);
+      if (!customer) {
+        customer = await CustomerStorage.create({
+          name,
+          email,
+          phone: phone || null,
+          address
+        });
+      }
+
+      // Map payment status to admin dashboard format
+      let dbPaymentStatus = 'unpaid'; // Default
+      if (paymentStatus === 'paid') {
+        // Determine if full payment or just deposit based on amount
+        const fullPrice = SERVICE_PRICES[service] || 200;
+        const depositAmount = calculateDepositAmount(fullPrice);
+        
+        if (verifiedAmount >= fullPrice) {
+          dbPaymentStatus = 'paid_in_full';
+        } else if (verifiedAmount >= depositAmount) {
+          dbPaymentStatus = 'deposit_paid';
+        }
+      } else if (paymentStatus === 'processing') {
+        // For processing payments, determine status based on amount like we do for paid
+        const fullPrice = SERVICE_PRICES[service] || 200;
+        const depositAmount = calculateDepositAmount(fullPrice);
+        
+        if (verifiedAmount >= fullPrice) {
+          dbPaymentStatus = 'paid_in_full'; // Full amount processing
+        } else if (verifiedAmount >= depositAmount) {
+          dbPaymentStatus = 'deposit_paid'; // Deposit amount processing
+        } else {
+          dbPaymentStatus = 'unpaid'; // Invalid amount
+        }
+      }
+
+      // Calculate amounts in cents
+      const totalAmountCents = (SERVICE_PRICES[service] || 200) * 100;
+      const amountPaidCents = (verifiedAmount || 0) * 100;
+      const isDepositPayment = paymentType === 'deposit';
+
+      // Create booking record
+      await BookingStorage.create({
+        customer_id: customer.id,
+        booking_id: bookingDetails.bookingId,
+        service_type: service,
+        service_name: serviceNames[service] || service,
+        total_amount_cents: totalAmountCents,
+        booking_date: date,
+        time_slot: slot || 'Not specified',
+        notes: notes || null,
+        payment_type: paymentType || 'full',
+        deposit_required: isDepositPayment,
+        deposit_cents: isDepositPayment ? calculateDepositAmount(SERVICE_PRICES[service] || 200) * 100 : 0,
+        amount_paid_cents: amountPaidCents,
+        payment_status: dbPaymentStatus,
+        stripe_payment_intent_id: verifiedPaymentId || null
+      });
+
+      console.log(`✅ Booking ${bookingDetails.bookingId} saved to database - Customer: ${customer.id}, Payment Status: ${dbPaymentStatus}`);
+    } catch (dbError) {
+      console.error('Database save error:', dbError);
+      // Don't fail the booking if database save fails, but log it
+    }
+
     console.log(`✅ Booking ${bookingDetails.bookingId} processed successfully - emails sent to ${email} and ${businessEmail}`);
 
     res.json({ 
@@ -799,6 +872,168 @@ Have questions about your payment or service? Email us directly and we'll respon
     console.error('Error sending payment confirmation email:', error);
   }
 }
+
+// ===========================================
+// ADMIN API ROUTES
+// ===========================================
+
+// Simple admin authentication middleware
+function requireAdmin(req, res, next) {
+  const authHeader = req.headers.authorization;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  
+  if (!adminPassword) {
+    console.error('ADMIN_PASSWORD environment variable is required');
+    return res.status(500).json({ error: 'Admin authentication not configured' });
+  }
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Admin authentication required' });
+  }
+  
+  const token = authHeader.substring(7);
+  if (token !== adminPassword) {
+    return res.status(401).json({ error: 'Invalid admin credentials' });
+  }
+  
+  next();
+}
+
+// Get admin dashboard overview stats
+app.get('/api/admin/dashboard', requireAdmin, async (req, res) => {
+  try {
+    if (!BookingStorage || !CustomerStorage) {
+      return res.status(500).json({ error: 'Database not initialized' });
+    }
+
+    const totalCustomers = (await CustomerStorage.getAll()).length;
+    const allBookings = await BookingStorage.getAll();
+    const bookingsWithBalance = await BookingStorage.getBookingsWithBalance();
+    
+    // Calculate stats
+    const totalBookings = allBookings.length;
+    const pendingPayments = allBookings.filter(b => b.payment_status === 'unpaid' || b.payment_status === 'deposit_paid').length;
+    const totalRevenue = allBookings
+      .filter(b => b.payment_status === 'paid_in_full')
+      .reduce((sum, b) => sum + b.amount_paid_cents, 0);
+    const pendingRevenue = bookingsWithBalance
+      .reduce((sum, item) => sum + item.remaining_balance, 0);
+
+    res.json({
+      totalCustomers,
+      totalBookings,
+      pendingPayments,
+      totalRevenue: totalRevenue / 100, // Convert cents to dollars
+      pendingRevenue: pendingRevenue / 100,
+      recentBookings: allBookings.slice(0, 5) // Last 5 bookings
+    });
+  } catch (error) {
+    console.error('Admin dashboard error:', error);
+    res.status(500).json({ error: 'Failed to load dashboard data' });
+  }
+});
+
+// Get all bookings with customer details
+app.get('/api/admin/bookings', requireAdmin, async (req, res) => {
+  try {
+    if (!BookingStorage) {
+      return res.status(500).json({ error: 'Database not initialized' });
+    }
+
+    const bookingsWithCustomers = await BookingStorage.getAllWithCustomers();
+    
+    // Format response with calculated remaining balance
+    const formattedBookings = bookingsWithCustomers.map(item => ({
+      ...item.booking,
+      customer: item.customer,
+      remaining_balance_cents: item.booking.total_amount_cents - item.booking.amount_paid_cents,
+      remaining_balance: (item.booking.total_amount_cents - item.booking.amount_paid_cents) / 100
+    }));
+
+    res.json(formattedBookings);
+  } catch (error) {
+    console.error('Admin bookings error:', error);
+    res.status(500).json({ error: 'Failed to load bookings' });
+  }
+});
+
+// Get bookings with remaining balance
+app.get('/api/admin/bookings/balance', requireAdmin, async (req, res) => {
+  try {
+    if (!BookingStorage) {
+      return res.status(500).json({ error: 'Database not initialized' });
+    }
+
+    const bookingsWithBalance = await BookingStorage.getBookingsWithBalance();
+    
+    const formattedBookings = bookingsWithBalance.map(item => ({
+      ...item.booking,
+      customer: item.customer,
+      remaining_balance_cents: item.remaining_balance,
+      remaining_balance: item.remaining_balance / 100
+    }));
+
+    res.json(formattedBookings);
+  } catch (error) {
+    console.error('Admin balance bookings error:', error);
+    res.status(500).json({ error: 'Failed to load bookings with balance' });
+  }
+});
+
+// Get all customers
+app.get('/api/admin/customers', requireAdmin, async (req, res) => {
+  try {
+    if (!CustomerStorage) {
+      return res.status(500).json({ error: 'Database not initialized' });
+    }
+
+    const customers = await CustomerStorage.getAll();
+    res.json(customers);
+  } catch (error) {
+    console.error('Admin customers error:', error);
+    res.status(500).json({ error: 'Failed to load customers' });
+  }
+});
+
+// Update payment status for a booking
+app.put('/api/admin/payment/update', requireAdmin, rateLimit, async (req, res) => {
+  try {
+    const { bookingId, paymentStatus, amountPaidCents, stripePaymentIntentId } = req.body;
+
+    if (!BookingStorage) {
+      return res.status(500).json({ error: 'Database not initialized' });
+    }
+
+    if (!bookingId || !paymentStatus || amountPaidCents === undefined) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Validate payment status
+    const validStatuses = ['unpaid', 'deposit_paid', 'paid_in_full', 'failed', 'refunded'];
+    if (!validStatuses.includes(paymentStatus)) {
+      return res.status(400).json({ error: 'Invalid payment status' });
+    }
+
+    const [updatedBooking] = await BookingStorage.updatePaymentStatus(
+      bookingId, 
+      paymentStatus, 
+      amountPaidCents, 
+      stripePaymentIntentId
+    );
+
+    if (!updatedBooking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    res.json({ 
+      message: 'Payment status updated successfully', 
+      booking: updatedBooking 
+    });
+  } catch (error) {
+    console.error('Admin payment update error:', error);
+    res.status(500).json({ error: 'Failed to update payment status' });
+  }
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
