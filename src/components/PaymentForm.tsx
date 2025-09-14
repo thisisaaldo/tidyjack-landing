@@ -39,7 +39,7 @@ const CheckoutForm = ({ amount, onPaymentSuccess, onPaymentError, clientSecret }
     setIsLoading(true);
 
     try {
-      const { error } = await stripe.confirmPayment({
+      const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/booking-success`,
@@ -50,8 +50,7 @@ const CheckoutForm = ({ amount, onPaymentSuccess, onPaymentError, clientSecret }
       if (error) {
         onPaymentError(error.message || 'Payment failed');
       } else {
-        // Payment succeeded - get the payment intent from the confirmation result
-        const { paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
+        // Payment succeeded - paymentIntent is already available from confirmPayment
         onPaymentSuccess(paymentIntent?.id || '');
       }
     } catch (err) {
