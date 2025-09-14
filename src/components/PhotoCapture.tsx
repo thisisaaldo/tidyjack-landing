@@ -103,6 +103,25 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onPhotoCaptured, photoType,
     };
   }, []);
 
+  // Listen for custom events to trigger new photo capture
+  useEffect(() => {
+    const handleTriggerCapture = (event: CustomEvent) => {
+      if (event.detail === photoType) {
+        // Reset the component state for new capture
+        setIsCaptured(false);
+        setError(null);
+        setIsStreaming(false);
+        stopCamera();
+      }
+    };
+
+    window.addEventListener('trigger-photo-capture', handleTriggerCapture as EventListener);
+    
+    return () => {
+      window.removeEventListener('trigger-photo-capture', handleTriggerCapture as EventListener);
+    };
+  }, [photoType, stopCamera]);
+
   // Handle mobile file input
   const handleFileInput = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
