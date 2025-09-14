@@ -121,7 +121,12 @@ app.post('/api/booking', async (req, res) => {
             <p><strong>Service:</strong> ${serviceName}</p>
             <p><strong>Estimated Price:</strong> ${servicePrice}</p>
             <p><strong>Preferred Date:</strong> ${date}</p>
-            <p><strong>Time Slot:</strong> ${slot === 'morning' ? 'Morning (8am-12pm)' : 'Afternoon (12pm-5pm)'}</p>
+            <p><strong>Time Slot:</strong> ${
+              slot === 'weekday_afternoon' ? 'Weekday Afternoon (3pm-6pm)' :
+              slot === 'weekend_morning' ? 'Weekend Morning (8am-12pm)' :
+              slot === 'weekend_afternoon' ? 'Weekend Afternoon (12pm-5pm)' :
+              slot
+            }</p>
             <p><strong>Address:</strong> ${address}</p>
             ${notes !== 'None' ? `<p><strong>Special Notes:</strong> ${notes}</p>` : ''}
           </div>
@@ -154,7 +159,12 @@ BOOKING DETAILS:
 - Service: ${serviceName}
 - Estimated Price: ${servicePrice}
 - Preferred Date: ${date}
-- Time Slot: ${slot === 'morning' ? 'Morning (8am-12pm)' : 'Afternoon (12pm-5pm)'}
+- Time Slot: ${
+  slot === 'weekday_afternoon' ? 'Weekday Afternoon (3pm-6pm)' :
+  slot === 'weekend_morning' ? 'Weekend Morning (8am-12pm)' :
+  slot === 'weekend_afternoon' ? 'Weekend Afternoon (12pm-5pm)' :
+  slot
+}
 - Address: ${address}
 ${notes !== 'None' ? `- Special Notes: ${notes}` : ''}
 
@@ -212,7 +222,12 @@ SERVICE DETAILS:
 - Service: ${serviceName}
 - Estimated Price: ${servicePrice}
 - Preferred Date: ${date}
-- Time Slot: ${slot === 'morning' ? 'Morning (8am-12pm)' : 'Afternoon (12pm-5pm)'}
+- Time Slot: ${
+  slot === 'weekday_afternoon' ? 'Weekday Afternoon (3pm-6pm)' :
+  slot === 'weekend_morning' ? 'Weekend Morning (8am-12pm)' :
+  slot === 'weekend_afternoon' ? 'Weekend Afternoon (12pm-5pm)' :
+  slot
+}
 ${notes !== 'None' ? `- Special Notes: ${notes}` : ''}
 
 Submitted: ${bookingDetails.submittedAt}

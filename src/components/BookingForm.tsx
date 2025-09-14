@@ -8,7 +8,7 @@ export default function BookingForm() {
     address: '',
     service: 'windows',
     date: '',
-    slot: 'morning',
+    slot: 'weekday_afternoon',
     notes: ''
   })
 
@@ -46,7 +46,7 @@ export default function BookingForm() {
           address: '',
           service: 'windows',
           date: '',
-          slot: 'morning',
+          slot: 'weekday_afternoon',
           notes: ''
         })
       } else {
@@ -180,9 +180,13 @@ export default function BookingForm() {
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="morning">Morning (8am-12pm)</option>
-            <option value="afternoon">Afternoon (12pm-5pm)</option>
+            <option value="weekday_afternoon">Weekday Afternoon (3pm-6pm)</option>
+            <option value="weekend_morning">Weekend Morning (8am-12pm)</option>
+            <option value="weekend_afternoon">Weekend Afternoon (12pm-5pm)</option>
           </select>
+          <p className="text-sm text-gray-600 mt-1">
+            📅 Available weekdays after 3pm, all day weekends
+          </p>
         </div>
       </div>
 
