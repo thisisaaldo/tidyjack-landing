@@ -12,7 +12,7 @@ A professional cleaning services landing page built with React, Vite, TypeScript
 
 ## Key Features
 - Responsive design for mobile and desktop
-- **Complete booking and payment system with Stripe integration**
+- **Complete booking and payment system with Stripe integration (Card + Afterpay)**
 - **Multi-step booking flow: form → secure payment → email confirmations**
 - **Owner availability scheduling (after 3pm weekdays, all day weekends)**
 - **Professional email notifications to business and customers**
