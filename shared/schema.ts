@@ -33,6 +33,8 @@ export const bookings = pgTable('bookings', {
   amount_paid_cents: integer('amount_paid_cents').default(0),
   payment_status: varchar('payment_status', { length: 30 }).notNull().default('unpaid'), 
   // Valid statuses: 'unpaid', 'deposit_paid', 'paid_in_full', 'failed', 'refunded'
+  job_status: varchar('job_status', { length: 30 }).notNull().default('scheduled'),
+  // Valid statuses: 'scheduled', 'in_progress', 'photos_sent', 'completed'
   stripe_payment_intent_id: varchar('stripe_payment_intent_id', { length: 100 }),
   created_at: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
   updated_at: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`)

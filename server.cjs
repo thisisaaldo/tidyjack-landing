@@ -920,13 +920,25 @@ app.get('/api/admin/dashboard', requireAdmin, async (req, res) => {
     const pendingRevenue = bookingsWithBalance
       .reduce((sum, item) => sum + item.remaining_balance, 0);
 
+    // Get completed jobs
+    const completedJobs = allBookings.filter(b => b.job_status === 'completed');
+    const activeJobs = allBookings.filter(b => b.job_status !== 'completed');
+
     res.json({
       totalCustomers,
       totalBookings,
       pendingPayments,
       totalRevenue: totalRevenue / 100, // Convert cents to dollars
       pendingRevenue: pendingRevenue / 100,
-      recentBookings: allBookings.slice(0, 5) // Last 5 bookings
+      recentBookings: activeJobs.slice(0, 10).map(booking => ({
+        ...booking,
+        remaining_balance: booking.remaining_balance || 0
+      })),
+      completedJobs: completedJobs.slice(0, 20).map(booking => ({
+        ...booking,
+        remaining_balance: booking.remaining_balance || 0
+      })),
+      totalCompletedJobs: completedJobs.length
     });
   } catch (error) {
     console.error('Admin dashboard error:', error);
@@ -1338,6 +1350,16 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
     } catch (generalError) {
       console.error('General error processing photos for attachment:', generalError);
       return res.status(500).json({ error: 'Failed to process photo files for email' });
+    }
+
+    // Automatically mark job as completed after photos are sent
+    try {
+      const { BookingStorage } = require('./server/storage.cjs');
+      await BookingStorage.updateJobStatus(booking.booking_id, 'completed');
+      console.log(`✅ Job ${booking.booking_id} marked as completed after photos sent`);
+    } catch (statusError) {
+      console.error('Error updating job status:', statusError);
+      // Continue with email sending even if status update fails
     }
 
     // Send email using Replit Mail

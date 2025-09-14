@@ -73,6 +73,25 @@ export class BookingStorage {
       .returning();
   }
 
+  static async updateJobStatus(bookingId: string, jobStatus: string) {
+    return db
+      .update(bookings)
+      .set({
+        job_status: jobStatus,
+        updated_at: sql`CURRENT_TIMESTAMP`
+      })
+      .where(eq(bookings.booking_id, bookingId))
+      .returning();
+  }
+
+  static async getByJobStatus(jobStatus: string): Promise<Booking[]> {
+    return db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.job_status, jobStatus))
+      .orderBy(desc(bookings.created_at));
+  }
+
   static async getBookingsByPaymentStatus(status: string) {
     return db
       .select({
