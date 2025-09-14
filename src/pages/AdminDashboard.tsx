@@ -166,10 +166,7 @@ const AdminDashboard = () => {
       setPhotoUploadState(prev => ({ ...prev, [photoType]: true }));
       setPhotoMessage(`${photoType.charAt(0).toUpperCase() + photoType.slice(1)} photo uploaded successfully!`);
 
-      // Check if both photos are ready and send email
-      if (photoData.hasCompleteSet) {
-        setTimeout(() => sendPhotosEmail(bookingId), 1000);
-      }
+      // Don't automatically send email - let user control when to send
 
       return photoData;
     } catch (error) {
@@ -178,7 +175,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const sendPhotosEmail = async (bookingId: number) => {
+  const sendPhotosEmail = async (bookingId: string) => {
     try {
       setPhotoMessage('Sending photos to customer...');
       
@@ -610,11 +607,17 @@ const AdminDashboard = () => {
                       </div>
 
                       {photoUploadState.before && photoUploadState.after && (
-                        <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                          <h4 className="text-green-800 font-medium">🎉 Both photos captured!</h4>
-                          <p className="text-green-700 text-sm mt-1">
-                            The before and after photos have been automatically sent to the customer.
+                        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                          <h4 className="text-blue-800 font-medium mb-3">🎉 Both photos captured!</h4>
+                          <p className="text-blue-700 text-sm mb-4">
+                            Ready to send before and after photos to the customer.
                           </p>
+                          <button
+                            onClick={() => sendPhotosEmail(selectedBooking.booking_id)}
+                            className="min-h-[48px] px-6 py-3 bg-green-600 text-white rounded-lg text-base font-medium hover:bg-green-700 transition-colors"
+                          >
+                            📧 Send Photos to Customer
+                          </button>
                         </div>
                       )}
                     </div>

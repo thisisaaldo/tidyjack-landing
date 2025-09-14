@@ -1204,39 +1204,107 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Booking ID is required' });
     }
 
-    // Get booking and customer details
-    const booking = await BookingStorage.getById(bookingId);
-    if (!booking) {
-      return res.status(404).json({ error: 'Booking not found' });
+    // Get booking and photos - handle both string and numeric booking IDs
+    let booking, numericBookingId;
+    if (typeof bookingId === 'string' && bookingId.startsWith('TJ')) {
+      booking = await BookingStorage.findByBookingId(bookingId);
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
+      numericBookingId = booking.id;
+    } else {
+      numericBookingId = parseInt(bookingId);
+      const allBookings = await BookingStorage.getAll();
+      booking = allBookings.find(b => b.id === numericBookingId);
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
     }
 
-    const customer = await CustomerStorage.getById(booking.customer_id);
+    const customer = await CustomerStorage.findById(booking.customer_id);
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found' });
     }
 
-    // Get photos
-    const photoSet = await PhotoStorage.getBookingPhotos(bookingId);
-    
-    if (!photoSet.hasCompleteSet) {
-      return res.status(400).json({ 
-        error: 'Both before and after photos are required to send email',
-        hasCompleteSet: false,
-        photos: photoSet
-      });
+    const photos = await PhotoStorage.getByBookingId(numericBookingId);
+    const beforePhoto = photos.find(p => p.photo_type === 'before');
+    const afterPhoto = photos.find(p => p.photo_type === 'after');
+
+    if (!beforePhoto || !afterPhoto) {
+      return res.status(400).json({ error: 'Both before and after photos are required' });
     }
 
-    // Send email with photos
-    const emailSent = await sendBeforeAfterEmail(customer, booking, photoSet);
+    // Send email using Replit Mail
+    const { sendMail } = require('./server/replitmail.cjs');
     
-    if (emailSent) {
-      res.json({ success: true, message: 'Photos sent to customer successfully' });
-    } else {
-      res.status(500).json({ error: 'Failed to send email' });
-    }
+    const emailHtml = `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 28px;">🐾 TidyJacks</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Professional Window Cleaning</p>
+        </div>
+        
+        <div style="background: white; padding: 30px;">
+          <h2 style="color: #333; margin-top: 0;">Job Complete - Before & After Photos</h2>
+          
+          <p style="color: #666; line-height: 1.6;">
+            Hi ${customer.name},<br><br>
+            Great news! We've completed your window cleaning service for booking <strong>${booking.booking_id}</strong>. 
+            Here are the before and after photos showing the fantastic results:
+          </p>
+
+          <div style="margin: 30px 0;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h3 style="color: #333; margin-bottom: 15px;">📷 Before</h3>
+              <img src="${beforePhoto.file_url}" alt="Before cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            </div>
+            
+            <div style="text-align: center;">
+              <h3 style="color: #333; margin-bottom: 15px;">✨ After</h3>
+              <img src="${afterPhoto.file_url}" alt="After cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            </div>
+          </div>
+
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #333; margin-top: 0;">Service Details:</h3>
+            <ul style="color: #666; line-height: 1.6;">
+              <li><strong>Service:</strong> ${booking.service_name}</li>
+              <li><strong>Date:</strong> ${new Date(booking.booking_date).toLocaleDateString()}</li>
+              <li><strong>Time:</strong> ${booking.time_slot}</li>
+            </ul>
+          </div>
+
+          <p style="color: #666; line-height: 1.6;">
+            We hope you're delighted with the results! Your windows are now sparkling clean and ready to let in all that beautiful natural light.
+          </p>
+
+          <p style="color: #666; line-height: 1.6;">
+            If you have any questions or would like to schedule another service, just reply to this email or visit our website.
+          </p>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://www.tidyjacks.com" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Book Another Service</a>
+          </div>
+
+          <p style="color: #999; font-size: 14px; text-align: center; margin-top: 30px;">
+            Thank you for choosing TidyJacks! 🐾<br>
+            <em>Making your windows sparkle, one pane at a time</em>
+          </p>
+        </div>
+      </div>
+    `;
+
+    await sendMail({
+      to: customer.email,
+      subject: `✨ Job Complete - Before & After Photos (${booking.booking_id})`,
+      html: emailHtml,
+      text: `Hi ${customer.name}, your window cleaning service is complete! Visit https://www.tidyjacks.com to view your before and after photos.`
+    });
+
+    res.json({ success: true, message: 'Photos sent successfully' });
   } catch (error) {
     console.error('Send photos email error:', error);
-    res.status(500).json({ error: 'Failed to send photos to customer' });
+    res.status(500).json({ error: 'Failed to send photos email' });
   }
 });
 

@@ -302,10 +302,21 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Booking ID is required' });
     }
 
-    // Get booking and photos
-    const booking = await BookingStorage.findByBookingId(bookingId);
-    if (!booking) {
-      return res.status(404).json({ error: 'Booking not found' });
+    // Get booking and photos - handle both string and numeric booking IDs
+    let booking, numericBookingId;
+    if (typeof bookingId === 'string' && bookingId.startsWith('TJ')) {
+      booking = await BookingStorage.findByBookingId(bookingId);
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
+      numericBookingId = booking.id;
+    } else {
+      numericBookingId = parseInt(bookingId);
+      const allBookings = await BookingStorage.getAll();
+      booking = allBookings.find(b => b.id === numericBookingId);
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
     }
 
     const customer = await CustomerStorage.findById(booking.customer_id);
@@ -313,7 +324,7 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Customer not found' });
     }
 
-    const photos = await PhotoStorage.getByBookingId(parseInt(bookingId));
+    const photos = await PhotoStorage.getByBookingId(numericBookingId);
     const beforePhoto = photos.find(p => p.photo_type === 'before');
     const afterPhoto = photos.find(p => p.photo_type === 'after');
 
