@@ -10,9 +10,11 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onPhotoCaptured, photoType,
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCaptured, setIsCaptured] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const startCamera = useCallback(async () => {
     try {
@@ -77,8 +79,52 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onPhotoCaptured, photoType,
 
   const retakePhoto = useCallback(() => {
     setIsCaptured(false);
-    startCamera();
-  }, [startCamera]);
+    if (isMobile) {
+      // For mobile, just reset state - user will click the camera button again
+      return;
+    } else {
+      // For desktop, restart the camera stream
+      startCamera();
+    }
+  }, [isMobile, startCamera]);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+      setIsMobile(isMobileDevice);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
+
+  // Handle mobile file input
+  const handleFileInput = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      // Convert file to blob and call the callback
+      const blob = new Blob([file], { type: file.type });
+      onPhotoCaptured(blob, photoType);
+      setIsCaptured(true);
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }, [onPhotoCaptured, photoType]);
+
+  // Mobile camera trigger
+  const openMobileCamera = useCallback(() => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -108,17 +154,46 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onPhotoCaptured, photoType,
             <div className="text-gray-600 text-base mb-4 px-2">
               Take a photo to show the {photoType === 'before' ? 'current state of the windows' : 'sparkling clean results'}
             </div>
-            <button
-              onClick={startCamera}
-              disabled={disabled}
-              className={`min-h-[56px] px-8 py-4 rounded-xl font-semibold text-lg transition-colors w-full sm:w-auto ${
-                disabled
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
-              } flex items-center justify-center`}
-            >
-              📸 Start Camera
-            </button>
+            
+            {/* Mobile Camera Interface */}
+            {isMobile ? (
+              <>
+                <button
+                  onClick={openMobileCamera}
+                  disabled={disabled}
+                  className={`min-h-[56px] px-8 py-4 rounded-xl font-semibold text-lg transition-colors w-full ${
+                    disabled
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+                  } flex items-center justify-center`}
+                >
+                  📱 Open Camera App
+                </button>
+                
+                {/* Hidden file input for mobile camera */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileInput}
+                  style={{ display: 'none' }}
+                />
+              </>
+            ) : (
+              /* Desktop Camera Interface */
+              <button
+                onClick={startCamera}
+                disabled={disabled}
+                className={`min-h-[56px] px-8 py-4 rounded-xl font-semibold text-lg transition-colors w-full sm:w-auto ${
+                  disabled
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+                } flex items-center justify-center`}
+              >
+                📸 Start Camera
+              </button>
+            )}
           </div>
         )}
 
