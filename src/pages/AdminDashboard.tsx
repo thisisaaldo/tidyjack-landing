@@ -142,7 +142,7 @@ const AdminDashboard = () => {
         body: photoBlob,
         headers: {
           'Content-Type': 'image/jpeg',
-          'Authorization': `Bearer ${getAuthToken()}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
 
