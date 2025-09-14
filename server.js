@@ -14,9 +14,59 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
   apiVersion: '2023-10-16',
 }) : null;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Middleware - CORS security configuration
+const allowedOrigins = [
+  'http://localhost:5000',
+  'https://1418cf15-1ec1-4817-a08e-7b0f3ecf5cb6-00-2dhmm2uavx57i.kirk.replit.dev',
+  // Add your production domain here when deploying
+  process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null
+].filter(Boolean);
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+// Stripe webhook endpoint needs raw body, so handle it before express.json()
+app.use('/api/webhook', express.raw({ type: 'application/json' }));
+app.use(express.json({ limit: '10mb' })); // Limit request size
+
+// Rate limiting for sensitive endpoints
+const rateLimitedRoutes = {};
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10; // 10 requests per minute per IP
+
+function rateLimit(req, res, next) {
+  const ip = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+  
+  if (!rateLimitedRoutes[ip]) {
+    rateLimitedRoutes[ip] = [];
+  }
+  
+  // Clean old requests
+  rateLimitedRoutes[ip] = rateLimitedRoutes[ip].filter(
+    timestamp => now - timestamp < RATE_LIMIT_WINDOW
+  );
+  
+  // Check if rate limit exceeded
+  if (rateLimitedRoutes[ip].length >= RATE_LIMIT_MAX_REQUESTS) {
+    return res.status(429).json({ 
+      error: 'Too many requests. Please try again later.' 
+    });
+  }
+  
+  // Add current request
+  rateLimitedRoutes[ip].push(now);
+  next();
+}
 
 // Service pricing map (single source of truth)
 const SERVICE_PRICES = {
@@ -79,8 +129,55 @@ async function sendEmail(message) {
   return await response.json();
 }
 
+// Input validation and sanitization
+function validateAndSanitizeInput(req, res, next) {
+  const { name, email, phone, address, service, date, slot, notes } = req.body;
+  
+  // Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (email && !emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+  
+  // Phone validation (optional but if provided should be valid)
+  if (phone && phone.length > 0) {
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,15}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ error: 'Invalid phone number format' });
+    }
+  }
+  
+  // Length validation
+  if (name && name.length > 100) {
+    return res.status(400).json({ error: 'Name too long' });
+  }
+  if (address && address.length > 500) {
+    return res.status(400).json({ error: 'Address too long' });
+  }
+  if (notes && notes.length > 1000) {
+    return res.status(400).json({ error: 'Notes too long' });
+  }
+  
+  // Service validation
+  if (service && !SERVICE_PRICES[service]) {
+    return res.status(400).json({ error: 'Invalid service type' });
+  }
+  
+  // Date validation (basic)
+  if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'Invalid date format' });
+  }
+  
+  // Sanitize HTML in text fields to prevent email injection
+  req.body.name = name?.replace(/[<>]/g, '') || '';
+  req.body.address = address?.replace(/[<>]/g, '') || '';
+  req.body.notes = notes?.replace(/[<>]/g, '') || '';
+  
+  next();
+}
+
 // Booking endpoint
-app.post('/api/booking', async (req, res) => {
+app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) => {
   try {
     const { name, email, phone, address, service, date, slot, notes, paymentIntentId, amountPaid, paymentType, fullAmount } = req.body;
 
@@ -471,8 +568,32 @@ Please contact the customer within 24 hours to confirm availability.
   }
 });
 
-// Stripe payment intent endpoint
-app.post('/api/create-payment-intent', async (req, res) => {
+// Stripe payment intent endpoint (with stricter rate limiting)
+function strictRateLimit(req, res, next) {
+  const ip = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+  
+  if (!rateLimitedRoutes[ip]) {
+    rateLimitedRoutes[ip] = [];
+  }
+  
+  // Clean old requests
+  rateLimitedRoutes[ip] = rateLimitedRoutes[ip].filter(
+    timestamp => now - timestamp < RATE_LIMIT_WINDOW
+  );
+  
+  // Stricter limit for payment endpoints: 5 requests per minute
+  if (rateLimitedRoutes[ip].length >= 5) {
+    return res.status(429).json({ 
+      error: 'Too many payment requests. Please try again later.' 
+    });
+  }
+  
+  rateLimitedRoutes[ip].push(now);
+  next();
+}
+
+app.post('/api/create-payment-intent', strictRateLimit, async (req, res) => {
   try {
     if (!stripe) {
       return res.status(500).json({ error: 'Payments unavailable: Stripe not configured' });
@@ -521,6 +642,146 @@ app.post('/api/create-payment-intent', async (req, res) => {
     });
   }
 });
+
+// Stripe webhook endpoint for handling async payment events
+app.post('/api/webhook', async (req, res) => {
+  if (!stripe) {
+    return res.status(500).json({ error: 'Stripe not configured' });
+  }
+
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET not configured');
+    return res.status(400).json({ error: 'Webhook secret not configured' });
+  }
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).json({ error: 'Invalid signature' });
+  }
+
+  try {
+    // Handle the event
+    switch (event.type) {
+      case 'payment_intent.succeeded':
+        const succeededPayment = event.data.object;
+        console.log(`✅ Payment succeeded: ${succeededPayment.id}`);
+        
+        // Send final confirmation emails for async payments like Afterpay
+        if (succeededPayment.metadata.customerEmail) {
+          await sendPaymentConfirmationEmail(succeededPayment, 'succeeded');
+        }
+        break;
+
+      case 'payment_intent.payment_failed':
+        const failedPayment = event.data.object;
+        console.log(`❌ Payment failed: ${failedPayment.id}`);
+        
+        // Optionally send failure notification
+        if (failedPayment.metadata.customerEmail) {
+          await sendPaymentConfirmationEmail(failedPayment, 'failed');
+        }
+        break;
+
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Webhook handler error:', error);
+    res.status(500).json({ error: 'Webhook handler failed' });
+  }
+});
+
+// Helper function to send payment confirmation emails via webhook
+async function sendPaymentConfirmationEmail(paymentIntent, status) {
+  try {
+    const { metadata } = paymentIntent;
+    const amount = paymentIntent.amount / 100; // Convert from cents
+    
+    if (status === 'succeeded') {
+      // Send final confirmation to customer
+      await sendEmail({
+        to: metadata.customerEmail,
+        subject: `Payment Confirmed - TidyJack Booking ${metadata.bookingType}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #10b981; padding: 20px; border-radius: 8px; text-align: center; color: white;">
+              <h2>✅ Payment Confirmed!</h2>
+            </div>
+            <div style="padding: 20px; background: #f8fafc; border-radius: 8px; margin-top: 20px;">
+              <p><strong>Your payment has been successfully processed.</strong></p>
+              <p><strong>Amount:</strong> $${amount} AUD</p>
+              <p><strong>Payment ID:</strong> ${paymentIntent.id}</p>
+              <p><strong>Service:</strong> ${metadata.bookingType}</p>
+              ${metadata.customerName ? `<p><strong>Customer:</strong> ${metadata.customerName}</p>` : ''}
+              <p>Thank you for choosing TidyJack Professional Cleaning Services!</p>
+            </div>
+          </div>
+        `,
+        text: `
+Payment Confirmed!
+
+Your payment has been successfully processed.
+Amount: $${amount} AUD
+Payment ID: ${paymentIntent.id}
+Service: ${metadata.bookingType}
+${metadata.customerName ? `Customer: ${metadata.customerName}` : ''}
+
+Thank you for choosing TidyJack Professional Cleaning Services!
+        `
+      });
+
+      // Send notification to business
+      const businessEmail = process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com';
+      await sendEmail({
+        to: businessEmail,
+        subject: `Payment Confirmed - ${metadata.customerName || 'Customer'} - $${amount} AUD`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2>💳 Payment Confirmed</h2>
+            <p><strong>Amount:</strong> $${amount} AUD</p>
+            <p><strong>Customer:</strong> ${metadata.customerName || 'Not provided'}</p>
+            <p><strong>Email:</strong> ${metadata.customerEmail}</p>
+            <p><strong>Service:</strong> ${metadata.bookingType}</p>
+            <p><strong>Payment ID:</strong> ${paymentIntent.id}</p>
+            <p><strong>Status:</strong> Completed via webhook</p>
+          </div>
+        `
+      });
+    } else if (status === 'failed') {
+      // Send failure notification to customer
+      await sendEmail({
+        to: metadata.customerEmail,
+        subject: `Payment Issue - TidyJack Booking ${metadata.bookingType}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #ef4444; padding: 20px; border-radius: 8px; text-align: center; color: white;">
+              <h2>❌ Payment Issue</h2>
+            </div>
+            <div style="padding: 20px; background: #f8fafc; border-radius: 8px; margin-top: 20px;">
+              <p>We encountered an issue processing your payment for TidyJack cleaning services.</p>
+              <p><strong>Amount:</strong> $${amount} AUD</p>
+              <p><strong>Service:</strong> ${metadata.bookingType}</p>
+              <p>Please contact us at hellotidyjack@gmail.com to resolve this issue.</p>
+            </div>
+          </div>
+        `
+      });
+    }
+
+    console.log(`✅ Payment ${status} email sent to ${metadata.customerEmail}`);
+  } catch (error) {
+    console.error('Error sending payment confirmation email:', error);
+  }
+}
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
