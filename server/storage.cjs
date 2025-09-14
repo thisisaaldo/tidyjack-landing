@@ -98,6 +98,11 @@ class BookingStorage {
     return booking || null;
   }
 
+  static async findById(id) {
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
+    return booking || null;
+  }
+
   static async getAll() {
     return db.select().from(bookings).orderBy(desc(bookings.created_at));
   }
