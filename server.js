@@ -38,9 +38,9 @@ const SERVICE_PRICES = {
   'deepclean': 60
 };
 
-// Calculate deposit amount (30% of full price, minimum $30)
+// Calculate deposit amount (30% of full price, minimum $30, but never exceed full price)
 const calculateDepositAmount = (fullPrice) => {
-  return Math.max(Math.round(fullPrice * 0.3), 30);
+  return Math.min(fullPrice, Math.max(Math.round(fullPrice * 0.3), 30));
 };
 
 // Import the email utility (we'll handle this differently for Node.js)
@@ -113,7 +113,7 @@ app.post('/api/booking', async (req, res) => {
         }
         
         // Server-side price verification (security critical)
-        const fullPrice = SERVICE_PRICES[service] || 119;
+        const fullPrice = SERVICE_PRICES[service] || 200;
         const depositAmount = calculateDepositAmount(fullPrice);
         
         // Determine expected amount based on payment type
@@ -165,8 +165,8 @@ app.post('/api/booking', async (req, res) => {
       bookingId: `TJ${Date.now()}`,
       paymentIntentId: verifiedPaymentId,
       amountPaid: verifiedAmount,
-      paymentType: paymentType || (verifiedAmount && verifiedAmount < (SERVICE_PRICES[service] || 119) ? 'deposit' : 'full'),
-      fullAmount: SERVICE_PRICES[service] || 119,
+      paymentType: paymentType || (verifiedAmount && verifiedAmount < (SERVICE_PRICES[service] || 200) ? 'deposit' : 'full'),
+      fullAmount: SERVICE_PRICES[service] || 200,
       paymentStatus,
       submittedAt: new Date().toLocaleString('en-AU', {
         timeZone: 'Australia/Sydney',
@@ -218,7 +218,7 @@ app.post('/api/booking', async (req, res) => {
     };
 
     const serviceName = serviceNames[service] || service;
-    const servicePrice = servicePriceLabels[service] || `From $${SERVICE_PRICES[service] || 119}`;
+    const servicePrice = servicePriceLabels[service] || `From $${SERVICE_PRICES[service] || 200}`;
 
     // Send confirmation email to customer
     const customerEmailHtml = `
@@ -475,23 +475,20 @@ Please contact the customer within 24 hours to confirm availability.
 app.post('/api/create-payment-intent', async (req, res) => {
   try {
     if (!stripe) {
-      return res.status(500).json({ error: 'Stripe not configured' });
+      return res.status(500).json({ error: 'Payments unavailable: Stripe not configured' });
     }
 
     const { bookingData } = req.body;
+    const { paymentType } = req.body;
 
     // Server-side price calculation (NEVER trust client amounts)
-    const servicePrices = {
-      'windows': 99,
-      'home': 119,
-      'office': 129,
-      'deep': 199,
-      'carpet': 89,
-      'oven': 79,
-      'endoflease': 249
-    };
+    const service = bookingData?.service;
+    if (!service || !SERVICE_PRICES[service]) {
+      return res.status(400).json({ error: 'Invalid service type' });
+    }
     
-    const serverAmount = SERVICE_PRICES[bookingData?.service] || 119;
+    const fullPrice = SERVICE_PRICES[service];
+    const serverAmount = paymentType === 'deposit' ? calculateDepositAmount(fullPrice) : fullPrice;
 
     // Create payment intent with Afterpay support
     const paymentIntent = await stripe.paymentIntents.create({
@@ -500,6 +497,8 @@ app.post('/api/create-payment-intent', async (req, res) => {
       payment_method_types: ['card', 'afterpay_clearpay'], // Enable Afterpay
       metadata: {
         bookingType: bookingData?.service || 'cleaning_service',
+        paymentType: paymentType || 'full',
+        fullAmount: fullPrice.toString(),
         customerEmail: bookingData?.email || '',
         customerName: bookingData?.name || '',
         address: bookingData?.address || '',

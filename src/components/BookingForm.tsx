@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import PaymentForm from './PaymentForm'
 
 export default function BookingForm() {
@@ -67,9 +67,16 @@ export default function BookingForm() {
     return names[service] || 'Window Cleaning Service'
   }
 
-  // Calculate deposit amount (30% of full price, minimum $30)
+  // Calculate deposit amount (30% of full price, minimum $30, but never exceed full price)
   const getDepositAmount = (fullPrice: number) => {
-    return Math.max(Math.round(fullPrice * 0.3), 30)
+    return Math.min(fullPrice, Math.max(Math.round(fullPrice * 0.3), 30))
+  }
+
+  // Check if deposit option should be available (only if deposit would be meaningfully less than full price)
+  const shouldShowDepositOption = (fullPrice: number) => {
+    const deposit = getDepositAmount(fullPrice)
+    // Hide deposit option if deposit is more than 80% of full price
+    return deposit < fullPrice * 0.8
   }
 
   // Get payment amount based on selected payment type
@@ -77,6 +84,14 @@ export default function BookingForm() {
     const fullPrice = getServicePrice(formData.service)
     return paymentType === 'deposit' ? getDepositAmount(fullPrice) : fullPrice
   }
+
+  // Auto-switch to full payment if deposit option is not available for current service
+  useEffect(() => {
+    const currentServicePrice = getServicePrice(formData.service)
+    if (!shouldShowDepositOption(currentServicePrice) && paymentType === 'deposit') {
+      setPaymentType('full')
+    }
+  }, [formData.service, paymentType])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -189,7 +204,7 @@ export default function BookingForm() {
         
         <PaymentForm
           amount={paymentAmount}
-          bookingData={formData}
+          bookingData={{...formData, paymentType: paymentType}}
           onPaymentSuccess={handlePaymentSuccess}
           onPaymentError={handlePaymentError}
         />
@@ -365,25 +380,27 @@ export default function BookingForm() {
           Payment Option
         </label>
         <div className="space-y-3">
-          <div className="flex items-center">
-            <input
-              type="radio"
-              id="deposit"
-              name="paymentType"
-              value="deposit"
-              checked={paymentType === 'deposit'}
-              onChange={(e) => setPaymentType(e.target.value as 'deposit' | 'full')}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-            />
-            <label htmlFor="deposit" className="ml-3 flex-1">
-              <div className="text-sm font-medium text-gray-900">
-                Pay Deposit - ${getDepositAmount(getServicePrice(formData.service))} AUD
-              </div>
-              <div className="text-sm text-gray-600">
-                Secure your booking with {Math.round((getDepositAmount(getServicePrice(formData.service)) / getServicePrice(formData.service)) * 100)}% deposit. Pay remaining ${getServicePrice(formData.service) - getDepositAmount(getServicePrice(formData.service))} AUD on completion.
-              </div>
-            </label>
-          </div>
+          {shouldShowDepositOption(getServicePrice(formData.service)) ? (
+            <div className="flex items-center">
+              <input
+                type="radio"
+                id="deposit"
+                name="paymentType"
+                value="deposit"
+                checked={paymentType === 'deposit'}
+                onChange={(e) => setPaymentType(e.target.value as 'deposit' | 'full')}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+              />
+              <label htmlFor="deposit" className="ml-3 flex-1">
+                <div className="text-sm font-medium text-gray-900">
+                  Pay Deposit - ${getDepositAmount(getServicePrice(formData.service))} AUD
+                </div>
+                <div className="text-sm text-gray-600">
+                  Secure your booking with {Math.round((getDepositAmount(getServicePrice(formData.service)) / getServicePrice(formData.service)) * 100)}% deposit. Pay remaining ${getServicePrice(formData.service) - getDepositAmount(getServicePrice(formData.service))} AUD on completion.
+                </div>
+              </label>
+            </div>
+          ) : null}
           <div className="flex items-center">
             <input
               type="radio"
@@ -404,6 +421,11 @@ export default function BookingForm() {
             </label>
           </div>
         </div>
+        {!shouldShowDepositOption(getServicePrice(formData.service)) && (
+          <p className="text-sm text-amber-600 mt-2">
+            💡 Full payment only for this service due to low cost. Deposit option available for higher-value services.
+          </p>
+        )}
       </div>
 
       {/* Status Messages */}

@@ -113,6 +113,7 @@ export default function PaymentForm({ amount, bookingData, onPaymentSuccess, onP
           body: JSON.stringify({
             amount,
             bookingData,
+            paymentType: bookingData.paymentType || 'full'
           }),
         });
 
