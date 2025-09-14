@@ -1052,7 +1052,7 @@ app.post('/api/admin/photos/upload', requireAdmin, async (req, res) => {
 });
 
 // Direct photo upload endpoint - handles the actual file upload
-app.post('/api/admin/photos/direct-upload', requireAdmin, express.raw({ type: 'image/jpeg', limit: '10mb' }), async (req, res) => {
+app.post('/api/admin/photos/direct-upload', requireAdmin, express.raw({ type: 'image/*', limit: '10mb' }), async (req, res) => {
   try {
     const fs = require('fs').promises;
     const path = require('path');
