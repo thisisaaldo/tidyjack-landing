@@ -91,13 +91,30 @@ const AdminDashboard = () => {
   // API calls with authentication
   const apiCall = async (endpoint: string, token?: string, options: RequestInit = {}) => {
     const authTokenToUse = token || authToken;
+    
+    // Defensive header merging to avoid Safari issues
+    const baseHeaders = {
+      'Authorization': `Bearer ${authTokenToUse}`,
+      'Content-Type': 'application/json'
+    };
+    
+    let extraHeaders: Record<string, string> = {};
+    if (options && options.headers) {
+      if (options.headers instanceof Headers) {
+        extraHeaders = Object.fromEntries(options.headers.entries());
+      } else if (Array.isArray(options.headers)) {
+        extraHeaders = Object.fromEntries(options.headers);
+      } else {
+        extraHeaders = options.headers as Record<string, string>;
+      }
+    }
+    
+    const finalHeaders = { ...baseHeaders, ...extraHeaders };
+    const { headers: _ignored, ...rest } = options || {};
+    
     const response = await fetch(`/api/admin${endpoint}`, {
-      headers: {
-        'Authorization': `Bearer ${authTokenToUse}`,
-        'Content-Type': 'application/json',
-        ...options.headers
-      },
-      ...options
+      ...rest,
+      headers: finalHeaders
     });
 
     if (!response.ok) {
