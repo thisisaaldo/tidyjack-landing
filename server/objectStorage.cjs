@@ -39,7 +39,7 @@ class ObjectStorageService {
     return dir;
   }
 
-  // Gets the upload URL for a photo
+  // Gets the upload URL and storage path for a photo
   async getPhotoUploadURL() {
     const privateObjectDir = this.getPrivateObjectDir();
     const objectId = `${Date.now()}_${randomUUID()}`;
@@ -47,12 +47,17 @@ class ObjectStorageService {
 
     const { bucketName, objectName } = parseObjectPath(`/${fullPath}`);
 
-    return signObjectURL({
+    const uploadURL = await signObjectURL({
       bucketName,
       objectName,
       method: "PUT",
       ttlSec: 900, // 15 minutes
     });
+
+    return {
+      uploadURL,
+      storagePath: `/${bucketName}/${objectName}` // This is what we'll save in the database
+    };
   }
 
   // Gets a photo file from storage
@@ -100,7 +105,7 @@ class ObjectStorageService {
 
   // Generate a public URL for a photo
   generatePhotoURL(filePath) {
-    // Convert file path to public URL format
+    // Convert file path to public URL format - works with catch-all route
     const normalizedPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
     return `/api/photos/${normalizedPath}`;
   }

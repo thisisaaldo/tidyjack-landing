@@ -1040,11 +1040,11 @@ app.put('/api/admin/payment/update', requireAdmin, rateLimit, async (req, res) =
 // ===========================================
 
 // Get upload URL for photo
-app.post('/api/photos/upload', requireAdmin, async (req, res) => {
+app.post('/api/admin/photos/upload', requireAdmin, async (req, res) => {
   try {
     const objectStorageService = new ObjectStorageService();
-    const uploadURL = await objectStorageService.getPhotoUploadURL();
-    res.json({ uploadURL });
+    const { uploadURL, storagePath } = await objectStorageService.getPhotoUploadURL();
+    res.json({ uploadURL, storagePath });
   } catch (error) {
     console.error('Photo upload URL error:', error);
     res.status(500).json({ error: 'Failed to get upload URL' });
@@ -1052,11 +1052,11 @@ app.post('/api/photos/upload', requireAdmin, async (req, res) => {
 });
 
 // Save photo metadata after upload
-app.post('/api/photos', requireAdmin, async (req, res) => {
+app.post('/api/admin/photos', requireAdmin, async (req, res) => {
   try {
-    const { bookingId, photoType, fileUrl } = req.body;
+    const { bookingId, photoType, storagePath } = req.body;
     
-    if (!bookingId || !photoType || !fileUrl) {
+    if (!bookingId || !photoType || !storagePath) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
@@ -1064,15 +1064,13 @@ app.post('/api/photos', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Photo type must be "before" or "after"' });
     }
 
-    // Extract file path from URL
     const objectStorageService = new ObjectStorageService();
-    const filePath = fileUrl.replace(/^https?:\/\/[^\/]+/, ''); // Remove domain
     
     const photoData = {
       booking_id: parseInt(bookingId),
       photo_type: photoType,
-      file_path: filePath,
-      file_url: objectStorageService.generatePhotoURL(filePath)
+      file_path: storagePath, // Save the storage path
+      file_url: objectStorageService.generatePhotoURL(storagePath)
     };
 
     const photo = await PhotoStorage.create(photoData);
@@ -1091,7 +1089,7 @@ app.post('/api/photos', requireAdmin, async (req, res) => {
 });
 
 // Get photos for a booking
-app.get('/api/photos/booking/:bookingId', requireAdmin, async (req, res) => {
+app.get('/api/admin/photos/booking/:bookingId', requireAdmin, async (req, res) => {
   try {
     const { bookingId } = req.params;
     const photoSet = await PhotoStorage.getBookingPhotos(bookingId);
@@ -1102,10 +1100,23 @@ app.get('/api/photos/booking/:bookingId', requireAdmin, async (req, res) => {
   }
 });
 
-// Serve photos
-app.get('/api/photos/*', async (req, res) => {
+// Serve photos (using middleware approach that bypasses path-to-regexp)
+app.use('/api/photos', async (req, res, next) => {
+  // Only handle GET requests for photo serving
+  if (req.method !== 'GET') {
+    return next();
+  }
+
   try {
-    const filePath = req.path;
+    // req.url contains the path after /api/photos mount point
+    const filePath = req.url.startsWith('/') ? req.url : '/' + req.url;
+    
+    // Security: ensure path is within allowed directory
+    const allowedPrefix = '/tidyjacks-photos/';
+    if (!filePath.startsWith(allowedPrefix)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
     const objectStorageService = new ObjectStorageService();
     const file = await objectStorageService.getPhotoFile(filePath);
     await objectStorageService.downloadPhoto(file, res);
@@ -1119,7 +1130,7 @@ app.get('/api/photos/*', async (req, res) => {
 });
 
 // Send before/after photos to customer
-app.post('/api/photos/send-email', requireAdmin, async (req, res) => {
+app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
   try {
     const { bookingId } = req.body;
     

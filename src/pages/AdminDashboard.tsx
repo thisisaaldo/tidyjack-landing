@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PhotoCapture from '../components/PhotoCapture';
 
 // Types for admin dashboard data
 interface Customer {
@@ -45,9 +46,17 @@ const AdminDashboard = () => {
   const [authError, setAuthError] = useState('');
   
   const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'customers' | 'payments'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'customers' | 'payments' | 'photos'>('overview');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Photo management state
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [photoUploadState, setPhotoUploadState] = useState<{
+    before: boolean;
+    after: boolean;
+  }>({ before: false, after: false });
+  const [photoMessage, setPhotoMessage] = useState('');
 
   // Authentication
   const handleLogin = async () => {
@@ -80,13 +89,15 @@ const AdminDashboard = () => {
   };
 
   // API calls with authentication
-  const apiCall = async (endpoint: string, token?: string) => {
+  const apiCall = async (endpoint: string, token?: string, options: RequestInit = {}) => {
     const authTokenToUse = token || authToken;
     const response = await fetch(`/api/admin${endpoint}`, {
       headers: {
         'Authorization': `Bearer ${authTokenToUse}`,
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+        ...options.headers
+      },
+      ...options
     });
 
     if (!response.ok) {
@@ -94,6 +105,74 @@ const AdminDashboard = () => {
     }
 
     return response.json();
+  };
+
+  // Photo management functions
+  const uploadPhoto = async (photoBlob: Blob, bookingId: number, photoType: 'before' | 'after') => {
+    try {
+      setPhotoMessage(`Uploading ${photoType} photo...`);
+      
+      // Get upload URL and storage path
+      const { uploadURL, storagePath } = await apiCall('/photos/upload');
+      
+      // Upload to object storage
+      const uploadResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: photoBlob,
+        headers: {
+          'Content-Type': 'image/jpeg',
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload photo');
+      }
+
+      // Save photo metadata with storage path
+      const photoData = await apiCall('/photos', undefined, {
+        method: 'POST',
+        body: JSON.stringify({
+          bookingId: bookingId,
+          photoType: photoType,
+          storagePath: storagePath // Send storage path instead of upload URL
+        })
+      });
+
+      setPhotoUploadState(prev => ({ ...prev, [photoType]: true }));
+      setPhotoMessage(`${photoType.charAt(0).toUpperCase() + photoType.slice(1)} photo uploaded successfully!`);
+
+      // Check if both photos are ready and send email
+      if (photoData.hasCompleteSet) {
+        setTimeout(() => sendPhotosEmail(bookingId), 1000);
+      }
+
+      return photoData;
+    } catch (error) {
+      setPhotoMessage(`Failed to upload ${photoType} photo: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
+    }
+  };
+
+  const sendPhotosEmail = async (bookingId: number) => {
+    try {
+      setPhotoMessage('Sending photos to customer...');
+      
+      await apiCall('/photos/send-email', undefined, {
+        method: 'POST',
+        body: JSON.stringify({ bookingId })
+      });
+      
+      setPhotoMessage('✅ Photos sent to customer successfully!');
+      
+      // Reset photo state after successful send
+      setTimeout(() => {
+        setSelectedBooking(null);
+        setPhotoUploadState({ before: false, after: false });
+        setPhotoMessage('');
+      }, 3000);
+    } catch (error) {
+      setPhotoMessage(`Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   // Load dashboard data
@@ -205,7 +284,8 @@ const AdminDashboard = () => {
               { key: 'overview', label: 'Overview' },
               { key: 'bookings', label: 'Bookings' },
               { key: 'customers', label: 'Customers' },
-              { key: 'payments', label: 'Outstanding Payments' }
+              { key: 'payments', label: 'Outstanding Payments' },
+              { key: 'photos', label: '📸 Photos' }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -297,8 +377,103 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Other tabs would be implemented here */}
-            {activeTab !== 'overview' && (
+            {/* Photos Tab */}
+            {activeTab === 'photos' && (
+              <div className="space-y-6">
+                <div className="bg-white shadow rounded-lg">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900">📸 Before & After Photos</h3>
+                    <p className="text-sm text-gray-500 mt-1">Capture photos and automatically send them to customers</p>
+                  </div>
+
+                  {!selectedBooking ? (
+                    <div className="p-6">
+                      <h4 className="text-md font-medium text-gray-900 mb-4">Select a Booking for Photo Capture</h4>
+                      {dashboardData?.recentBookings && dashboardData.recentBookings.length > 0 ? (
+                        <div className="grid gap-4">
+                          {dashboardData.recentBookings.map((booking) => (
+                            <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">{booking.booking_id}</p>
+                                  <p className="text-sm text-gray-500">{booking.service_name}</p>
+                                  <p className="text-xs text-gray-400">Date: {new Date(booking.booking_date).toLocaleDateString()}</p>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    setSelectedBooking(booking);
+                                    setPhotoUploadState({ before: false, after: false });
+                                    setPhotoMessage('');
+                                  }}
+                                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                                >
+                                  📷 Take Photos
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">No recent bookings available for photo capture.</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-6">
+                      <div className="mb-6">
+                        <button
+                          onClick={() => setSelectedBooking(null)}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        >
+                          ← Back to booking selection
+                        </button>
+                        <h4 className="text-lg font-medium text-gray-900 mt-2">
+                          Photos for {selectedBooking.booking_id}
+                        </h4>
+                        <p className="text-sm text-gray-500">{selectedBooking.service_name}</p>
+                      </div>
+
+                      {photoMessage && (
+                        <div className={`mb-6 p-4 rounded-lg ${
+                          photoMessage.includes('✅') 
+                            ? 'bg-green-50 border border-green-200 text-green-700'
+                            : photoMessage.includes('Failed')
+                              ? 'bg-red-50 border border-red-200 text-red-700'
+                              : 'bg-blue-50 border border-blue-200 text-blue-700'
+                        }`}>
+                          {photoMessage}
+                        </div>
+                      )}
+
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <PhotoCapture
+                          photoType="before"
+                          onPhotoCaptured={(blob) => uploadPhoto(blob, selectedBooking.id, 'before')}
+                          disabled={photoUploadState.before}
+                        />
+                        
+                        <PhotoCapture
+                          photoType="after"
+                          onPhotoCaptured={(blob) => uploadPhoto(blob, selectedBooking.id, 'after')}
+                          disabled={photoUploadState.after}
+                        />
+                      </div>
+
+                      {photoUploadState.before && photoUploadState.after && (
+                        <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                          <h4 className="text-green-800 font-medium">🎉 Both photos captured!</h4>
+                          <p className="text-green-700 text-sm mt-1">
+                            The before and after photos have been automatically sent to the customer.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Other tabs placeholder */}
+            {activeTab !== 'overview' && activeTab !== 'photos' && (
               <div className="text-center py-12">
                 <p className="text-gray-500">Dashboard feature coming soon...</p>
                 <p className="text-sm text-gray-400 mt-2">
