@@ -7,7 +7,7 @@ export default function BookingForm() {
     email: '',
     phone: '',
     address: '',
-    service: 'windows',
+    service: 'small_home',
     date: '',
     slot: 'weekday_afternoon',
     notes: ''
@@ -24,15 +24,47 @@ export default function BookingForm() {
   // Calculate pricing based on service
   const getServicePrice = (service: string) => {
     const prices: { [key: string]: number } = {
-      'windows': 99,
-      'home': 119,
-      'office': 129,
-      'deep': 199,
-      'carpet': 89,
-      'oven': 79,
-      'endoflease': 249
+      // Residential Homes (inside & out)
+      'apartmentflat': 150,
+      'small_home': 200,
+      'large_home': 270,
+      'twostory_3bed': 320,
+      'twostory_4bed': 360,
+      // Residential Homes (exterior only - 60% of full price)
+      'apartmentflat_ext': 90,
+      'small_home_ext': 120,
+      'large_home_ext': 162,
+      'twostory_3bed_ext': 192,
+      'twostory_4bed_ext': 216,
+      // Retail Storefronts
+      'small_shopfront': 25,
+      'shopfront_full': 35,
+      'deepclean': 60
     }
-    return prices[service] || 119
+    return prices[service] || 200
+  }
+
+  // Get service display name
+  const getServiceName = (service: string) => {
+    const names: { [key: string]: string } = {
+      // Residential Homes (inside & out)
+      'apartmentflat': 'Apartment/Flat Windows (Inside & Out)',
+      'small_home': 'Small Single-Storey Home (2-3 bed)',
+      'large_home': 'Large Single-Storey Home (4+ bed)',
+      'twostory_3bed': 'Two-Storey Home (3 bed)',
+      'twostory_4bed': 'Two-Storey Home (4+ bed)',
+      // Residential Homes (exterior only)
+      'apartmentflat_ext': 'Apartment/Flat Windows (Exterior Only)',
+      'small_home_ext': 'Small Home Windows (Exterior Only)',
+      'large_home_ext': 'Large Home Windows (Exterior Only)',
+      'twostory_3bed_ext': 'Two-Storey Home Windows (Exterior Only)',
+      'twostory_4bed_ext': 'Two-Storey Home Windows (Exterior Only)',
+      // Retail Storefronts
+      'small_shopfront': 'Small Shopfront (Outside Only)',
+      'shopfront_full': 'Shopfront (Inside & Outside)',
+      'deepclean': 'One-off Deep Clean'
+    }
+    return names[service] || 'Window Cleaning Service'
   }
 
   // Calculate deposit amount (30% of full price, minimum $30)
@@ -94,7 +126,7 @@ export default function BookingForm() {
           email: '',
           phone: '',
           address: '',
-          service: 'windows',
+          service: 'small_home',
           date: '',
           slot: 'weekday_afternoon',
           notes: ''
@@ -136,7 +168,7 @@ export default function BookingForm() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 mb-2">Booking Summary</h3>
           <div className="text-sm text-blue-800 space-y-1">
-            <p><strong>Service:</strong> Window Cleaning</p>
+            <p><strong>Service:</strong> {getServiceName(formData.service)}</p>
             <p><strong>Date:</strong> {formData.date}</p>
             <p><strong>Time:</strong> {
               formData.slot === 'weekday_afternoon' ? 'Weekday Afternoon (3pm-6pm)' :
@@ -239,6 +271,42 @@ export default function BookingForm() {
         />
       </div>
 
+      <div>
+        <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-1">
+          Service Type
+        </label>
+        <select
+          id="service"
+          name="service"
+          value={formData.service}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          required
+        >
+          <optgroup label="🏠 Residential Homes (Inside & Out)">
+            <option value="apartmentflat">Apartment/Flat - $150</option>
+            <option value="small_home">Small Single-Storey (2-3 bed) - $200</option>
+            <option value="large_home">Large Single-Storey (4+ bed) - $270</option>
+            <option value="twostory_3bed">Two-Storey (3 bed) - $320</option>
+            <option value="twostory_4bed">Two-Storey (4+ bed) - $360</option>
+          </optgroup>
+          <optgroup label="🏠 Residential Homes (Exterior Only)">
+            <option value="apartmentflat_ext">Apartment/Flat Exterior - $90</option>
+            <option value="small_home_ext">Small Home Exterior - $120</option>
+            <option value="large_home_ext">Large Home Exterior - $162</option>
+            <option value="twostory_3bed_ext">Two-Storey Exterior (3 bed) - $192</option>
+            <option value="twostory_4bed_ext">Two-Storey Exterior (4+ bed) - $216</option>
+          </optgroup>
+          <optgroup label="🏪 Retail Storefronts">
+            <option value="small_shopfront">Small Shopfront (Outside Only) - From $25</option>
+            <option value="shopfront_full">Shopfront (Inside & Outside) - From $35</option>
+            <option value="deepclean">One-off Deep Clean - From $60</option>
+          </optgroup>
+        </select>
+        <p className="text-sm text-gray-600 mt-1">
+          💡 Exterior-only services are 60% of full pricing. Retail pricing may vary based on size.
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>

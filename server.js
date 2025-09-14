@@ -20,13 +20,22 @@ app.use(express.json());
 
 // Service pricing map (single source of truth)
 const SERVICE_PRICES = {
-  'windows': 99,
-  'home': 119,
-  'office': 129,
-  'deep': 199,
-  'carpet': 89,
-  'oven': 79,
-  'endoflease': 249
+  // Residential Homes (inside & out)
+  'apartmentflat': 150,
+  'small_home': 200,
+  'large_home': 270,
+  'twostory_3bed': 320,
+  'twostory_4bed': 360,
+  // Residential Homes (exterior only - 60% of full price)
+  'apartmentflat_ext': 90,
+  'small_home_ext': 120,
+  'large_home_ext': 162,
+  'twostory_3bed_ext': 192,
+  'twostory_4bed_ext': 216,
+  // Retail Storefronts
+  'small_shopfront': 25,
+  'shopfront_full': 35,
+  'deepclean': 60
 };
 
 // Calculate deposit amount (30% of full price, minimum $30)
@@ -171,23 +180,41 @@ app.post('/api/booking', async (req, res) => {
 
     // Service price labels for display
     const servicePriceLabels = {
-      'windows': 'From $99',
-      'home': 'From $119',
-      'office': 'From $129',
-      'deep': 'From $199',
-      'carpet': 'From $89',
-      'oven': 'From $79',
-      'endoflease': 'From $249'
+      // Residential Homes (inside & out)
+      'apartmentflat': '$150',
+      'small_home': '$200',
+      'large_home': '$270',
+      'twostory_3bed': '$320',
+      'twostory_4bed': '$360',
+      // Residential Homes (exterior only)
+      'apartmentflat_ext': '$90',
+      'small_home_ext': '$120',
+      'large_home_ext': '$162',
+      'twostory_3bed_ext': '$192',
+      'twostory_4bed_ext': '$216',
+      // Retail Storefronts
+      'small_shopfront': 'From $25',
+      'shopfront_full': 'From $35',
+      'deepclean': 'From $60'
     };
 
     const serviceNames = {
-      'windows': 'Window Cleaning',
-      'home': 'Home Cleaning',
-      'office': 'Office Cleaning',
-      'deep': 'Deep Cleaning',
-      'carpet': 'Carpet Cleaning',
-      'oven': 'Oven Cleaning',
-      'endoflease': 'End-of-Lease Cleaning'
+      // Residential Homes (inside & out)
+      'apartmentflat': 'Apartment/Flat Windows (Inside & Out)',
+      'small_home': 'Small Single-Storey Home (2-3 bed)',
+      'large_home': 'Large Single-Storey Home (4+ bed)',
+      'twostory_3bed': 'Two-Storey Home (3 bed)',
+      'twostory_4bed': 'Two-Storey Home (4+ bed)',
+      // Residential Homes (exterior only)
+      'apartmentflat_ext': 'Apartment/Flat Windows (Exterior Only)',
+      'small_home_ext': 'Small Home Windows (Exterior Only)',
+      'large_home_ext': 'Large Home Windows (Exterior Only)',
+      'twostory_3bed_ext': 'Two-Storey Home Windows (Exterior Only)',
+      'twostory_4bed_ext': 'Two-Storey Home Windows (Exterior Only)',
+      // Retail Storefronts
+      'small_shopfront': 'Small Shopfront (Outside Only)',
+      'shopfront_full': 'Shopfront (Inside & Outside)',
+      'deepclean': 'One-off Deep Clean'
     };
 
     const serviceName = serviceNames[service] || service;
