@@ -1043,11 +1043,48 @@ app.put('/api/admin/payment/update', requireAdmin, rateLimit, async (req, res) =
 app.post('/api/admin/photos/upload', requireAdmin, async (req, res) => {
   try {
     const objectStorageService = new ObjectStorageService();
-    const { uploadURL, storagePath } = await objectStorageService.getPhotoUploadURL();
-    res.json({ uploadURL, storagePath });
+    const { uploadURL, storagePath, objectId } = await objectStorageService.getPhotoUploadURL();
+    res.json({ uploadURL, storagePath, objectId });
   } catch (error) {
     console.error('Photo upload URL error:', error);
     res.status(500).json({ error: 'Failed to get upload URL' });
+  }
+});
+
+// Direct photo upload endpoint - handles the actual file upload
+app.post('/api/admin/photos/direct-upload', requireAdmin, express.raw({ type: 'image/jpeg', limit: '10mb' }), async (req, res) => {
+  try {
+    const fs = require('fs').promises;
+    const path = require('path');
+    
+    // Check if we have photo data
+    if (!req.body || req.body.length === 0) {
+      return res.status(400).json({ error: 'No photo data received' });
+    }
+    
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = path.join(__dirname, 'uploads', 'tidyjacks-photos');
+    await fs.mkdir(uploadsDir, { recursive: true });
+    
+    // Use the raw buffer from the request
+    const photoBuffer = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body);
+    
+    // Generate filename from timestamp
+    const timestamp = Date.now();
+    const filename = `${timestamp}_${require('crypto').randomUUID()}.jpg`;
+    const filepath = path.join(uploadsDir, filename);
+    
+    // Save file
+    await fs.writeFile(filepath, photoBuffer);
+    
+    res.json({ 
+      success: true,
+      storagePath: `/tidyjacks-photos/${filename}`,
+      message: 'Photo uploaded successfully'
+    });
+  } catch (error) {
+    console.error('Direct photo upload error:', error);
+    res.status(500).json({ error: 'Failed to upload photo' });
   }
 });
 
@@ -1100,7 +1137,7 @@ app.get('/api/admin/photos/booking/:bookingId', requireAdmin, async (req, res) =
   }
 });
 
-// Serve photos (using middleware approach that bypasses path-to-regexp)
+// Serve photos (simplified local file serving)
 app.use('/api/photos', async (req, res, next) => {
   // Only handle GET requests for photo serving
   if (req.method !== 'GET') {
@@ -1108,22 +1145,36 @@ app.use('/api/photos', async (req, res, next) => {
   }
 
   try {
+    const fs = require('fs').promises;
+    const path = require('path');
+    
     // req.url contains the path after /api/photos mount point
-    const filePath = req.url.startsWith('/') ? req.url : '/' + req.url;
+    const filePath = req.url.startsWith('/') ? req.url.slice(1) : req.url;
     
     // Security: ensure path is within allowed directory
-    const allowedPrefix = '/tidyjacks-photos/';
-    if (!filePath.startsWith(allowedPrefix)) {
+    if (!filePath.startsWith('tidyjacks-photos/')) {
       return res.status(403).json({ error: 'Access denied' });
     }
     
-    const objectStorageService = new ObjectStorageService();
-    const file = await objectStorageService.getPhotoFile(filePath);
-    await objectStorageService.downloadPhoto(file, res);
-  } catch (error) {
-    if (error instanceof ObjectNotFoundError) {
+    // Construct local file path
+    const localFilePath = path.join(__dirname, 'uploads', filePath);
+    
+    // Check if file exists
+    try {
+      await fs.access(localFilePath);
+    } catch {
       return res.status(404).json({ error: 'Photo not found' });
     }
+    
+    // Set proper headers and serve file
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    
+    // Stream the file
+    const fileBuffer = await fs.readFile(localFilePath);
+    res.send(fileBuffer);
+    
+  } catch (error) {
     console.error('Photo serve error:', error);
     res.status(500).json({ error: 'Failed to serve photo' });
   }

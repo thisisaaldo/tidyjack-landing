@@ -136,29 +136,30 @@ const AdminDashboard = () => {
     try {
       setPhotoMessage(`Uploading ${photoType} photo...`);
       
-      // Get upload URL and storage path
-      const { uploadURL, storagePath } = await apiCall('/photos/upload');
-      
-      // Upload to object storage
-      const uploadResponse = await fetch(uploadURL, {
-        method: 'PUT',
+      // Direct upload approach - upload photo directly to server
+      const uploadResponse = await fetch('/api/admin/photos/direct-upload', {
+        method: 'POST',
         body: photoBlob,
         headers: {
           'Content-Type': 'image/jpeg',
+          'Authorization': `Bearer ${getAuthToken()}`,
         },
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Failed to upload photo');
+        const error = await uploadResponse.json();
+        throw new Error(error.error || 'Failed to upload photo');
       }
 
+      const uploadResult = await uploadResponse.json();
+      
       // Save photo metadata with storage path
       const photoData = await apiCall('/photos', undefined, {
         method: 'POST',
         body: JSON.stringify({
           bookingId: bookingId,
           photoType: photoType,
-          storagePath: storagePath // Send storage path instead of upload URL
+          storagePath: uploadResult.storagePath
         })
       });
 

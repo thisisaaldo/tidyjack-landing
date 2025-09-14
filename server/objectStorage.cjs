@@ -41,22 +41,14 @@ class ObjectStorageService {
 
   // Gets the upload URL and storage path for a photo
   async getPhotoUploadURL() {
-    const privateObjectDir = this.getPrivateObjectDir();
+    // Simplified approach - use direct server upload instead of signed URLs
     const objectId = `${Date.now()}_${randomUUID()}`;
-    const fullPath = `${privateObjectDir}/${objectId}.jpg`;
-
-    const { bucketName, objectName } = parseObjectPath(`/${fullPath}`);
-
-    const uploadURL = await signObjectURL({
-      bucketName,
-      objectName,
-      method: "PUT",
-      ttlSec: 900, // 15 minutes
-    });
+    const storagePath = `/tidyjacks-photos/${objectId}.jpg`;
 
     return {
-      uploadURL,
-      storagePath: `/${bucketName}/${objectName}` // This is what we'll save in the database
+      uploadURL: `/api/admin/photos/direct-upload`, // Direct upload to our server
+      storagePath: storagePath,
+      objectId: objectId // Include objectId for the upload
     };
   }
 
