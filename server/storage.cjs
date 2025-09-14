@@ -41,6 +41,20 @@ const bookings = pgTable('bookings', {
   paymentStatusIdx: index('idx_bookings_payment_status').on(table.payment_status)
 }));
 
+// Photos table for before/after images
+const photos = pgTable('photos', {
+  id: serial('id').primaryKey(),
+  booking_id: integer('booking_id').references(() => bookings.id).notNull(),
+  photo_type: varchar('photo_type', { length: 20 }).notNull(), // 'before' or 'after'
+  file_path: text('file_path').notNull(), // Object storage path
+  file_url: text('file_url').notNull(), // Public URL to access the photo
+  captured_at: timestamp('captured_at').default(sql`CURRENT_TIMESTAMP`),
+  created_at: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`)
+}, (table) => ({
+  bookingIdx: index('idx_photos_booking_id').on(table.booking_id),
+  typeIdx: index('idx_photos_type').on(table.photo_type)
+}));
+
 // Database connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -137,10 +151,48 @@ class BookingStorage {
   }
 }
 
+// Photo operations
+class PhotoStorage {
+  static async create(photoData) {
+    const [photo] = await db.insert(photos).values(photoData).returning();
+    return photo;
+  }
+
+  static async getByBookingId(bookingId) {
+    return db.select().from(photos).where(eq(photos.booking_id, bookingId)).orderBy(desc(photos.created_at));
+  }
+
+  static async getByBookingIdAndType(bookingId, photoType) {
+    const [photo] = await db
+      .select()
+      .from(photos)
+      .where(sql`${photos.booking_id} = ${bookingId} AND ${photos.photo_type} = ${photoType}`);
+    return photo || null;
+  }
+
+  static async deleteById(id) {
+    return db.delete(photos).where(eq(photos.id, id)).returning();
+  }
+
+  static async getBookingPhotos(bookingId) {
+    const allPhotos = await PhotoStorage.getByBookingId(bookingId);
+    const beforePhoto = allPhotos.find(p => p.photo_type === 'before');
+    const afterPhoto = allPhotos.find(p => p.photo_type === 'after');
+    
+    return {
+      before: beforePhoto,
+      after: afterPhoto,
+      hasCompleteSet: !!(beforePhoto && afterPhoto)
+    };
+  }
+}
+
 module.exports = {
   CustomerStorage,
   BookingStorage,
+  PhotoStorage,
   customers,
   bookings,
+  photos,
   db
 };

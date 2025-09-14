@@ -43,8 +43,24 @@ export const bookings = pgTable('bookings', {
   paymentStatusIdx: index('idx_bookings_payment_status').on(table.payment_status)
 }));
 
+// Photos table for before/after images
+export const photos = pgTable('photos', {
+  id: serial('id').primaryKey(),
+  booking_id: integer('booking_id').references(() => bookings.id).notNull(),
+  photo_type: varchar('photo_type', { length: 20 }).notNull(), // 'before' or 'after'
+  file_path: text('file_path').notNull(), // Object storage path
+  file_url: text('file_url').notNull(), // Public URL to access the photo
+  captured_at: timestamp('captured_at').default(sql`CURRENT_TIMESTAMP`),
+  created_at: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`)
+}, (table) => ({
+  bookingIdx: index('idx_photos_booking_id').on(table.booking_id),
+  typeIdx: index('idx_photos_type').on(table.photo_type)
+}));
+
 // Types for TypeScript
 export type Customer = typeof customers.$inferSelect;
 export type NewCustomer = typeof customers.$inferInsert;
 export type Booking = typeof bookings.$inferSelect;
 export type NewBooking = typeof bookings.$inferInsert;
+export type Photo = typeof photos.$inferSelect;
+export type NewPhoto = typeof photos.$inferInsert;
