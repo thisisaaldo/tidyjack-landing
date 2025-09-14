@@ -615,7 +615,7 @@ app.post('/api/create-payment-intent', strictRateLimit, async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(serverAmount * 100), // Convert to cents
       currency: 'aud', // Australian dollars
-      payment_method_types: ['card'], // Temporarily restrict to card only for testing // Enable Afterpay
+      payment_method_types: ['card', 'afterpay_clearpay'], // Enable Afterpay
       metadata: {
         bookingType: bookingData?.service || 'cleaning_service',
         paymentType: paymentType || 'full',
