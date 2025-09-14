@@ -36,10 +36,14 @@ A professional window cleaning service landing page built with React, Vite, Type
 - Production port: 5000
 
 ## Recent Changes
-- 2024-09-14: Complete Stripe payment integration implemented
+- 2024-09-14: **Deposit vs Full Payment Feature Completed** - Customers can now choose to pay 30% deposit (minimum $30) or full amount upfront
+- **Window Cleaning Specialization** - Business focus changed to window cleaning only with updated pricing tiers
+- **Afterpay Integration** - Added "Pay in 4" installment payment option alongside card payments
+- **Enhanced Security** - Server-side price validation and payment verification for both deposit and full amounts
+- Complete Stripe payment integration implemented
 - Added secure payment processing with server-side validation
 - Implemented multi-step booking flow (form → payment → confirmation)
-- Updated email templates with payment confirmation details
+- Updated email templates with payment confirmation details showing payment type and remaining balances
 - Enhanced booking availability to match owner's schedule (after 3pm weekdays)
 - Configured production-ready security measures and error handling
 - Imported from GitHub and configured for Replit environment
