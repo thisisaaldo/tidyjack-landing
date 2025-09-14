@@ -1144,9 +1144,28 @@ app.post('/api/admin/photos', requireAdmin, async (req, res) => {
       allPhotos.some(p => p.photo_type === 'before') && 
       allPhotos.some(p => p.photo_type === 'after');
     
+    // NEW: Auto-complete job when both photos exist
+    let jobCompleted = false;
+    if (hasCompleteSet) {
+      try {
+        // Get the booking's string ID for updateJobStatus
+        const booking = await BookingStorage.findById(numericBookingId);
+        if (booking) {
+          console.log(`Auto-completing job for booking ${booking.booking_id} after ${photoType} photo upload`);
+          await BookingStorage.updateJobStatus(booking.booking_id, 'completed');
+          jobCompleted = true;
+          console.log(`✅ Job ${booking.booking_id} marked as completed automatically`);
+        }
+      } catch (error) {
+        console.error('Error auto-completing job:', error);
+        // Don't fail the photo upload if job completion fails
+      }
+    }
+    
     res.json({ 
       photo,
-      hasCompleteSet
+      hasCompleteSet,
+      jobCompleted
     });
   } catch (error) {
     console.error('Photo save error:', error);
