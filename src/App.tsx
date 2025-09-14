@@ -12,7 +12,7 @@ function App() {
             className="text-lg font-semibold tracking-tight hover:opacity-80 focus:opacity-80 rounded-md outline-none focus:outline-none cursor-pointer flex items-center"
             aria-label="Go to home"
           >
-            🐾 TidyJack
+            🐾 TidyJacks
           </a>
           <nav className="hidden sm:flex items-center gap-3 text-sm">
             <button 
@@ -228,7 +228,7 @@ function App() {
             <details className="card p-4">
               <summary className="cursor-pointer font-medium">Are window cleaners insured and police‑checked?</summary>
               <p className="text-sm text-black/70 mt-2">
-                Absolutely. All TidyJack window cleaning professionals are vetted, insured, and police‑checked for your peace of mind.
+                Absolutely. All TidyJacks window cleaning professionals are vetted, insured, and police‑checked for your peace of mind.
               </p>
             </details>
           </div>
@@ -239,7 +239,7 @@ function App() {
           <div className="rounded-2xl border border-black/10 bg-black/[.03] p-4 sm:p-6 text-sm text-black/80">
             <ul className="space-y-1">
               <li><span className="font-medium">ABN:</span> Proudly registered in Australia (ABN 12 345 678 910)</li>
-              <li><span className="font-medium">Insurance:</span> All TidyJack cleaners are fully insured</li>
+              <li><span className="font-medium">Insurance:</span> All TidyJacks cleaners are fully insured</li>
               <li><span className="font-medium">Police checks:</span> Every cleaner is vetted and background checked</li>
               <li><span className="font-medium">Workplace safety:</span> Following Australian WHS standards</li>
               <li><span className="font-medium">Secure payments:</span> Powered by Stripe & Afterpay</li>
@@ -250,7 +250,7 @@ function App() {
         {/* CTA footer */}
         <section className="py-10 border-t border-black/10">
           <div className="text-center">
-            <h3 className="font-display text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TidyJack — Australia's window cleaning experts</h3>
+            <h3 className="font-display text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TidyJacks — Australia's window cleaning experts</h3>
             <p className="mt-2 text-black/70">Book trusted, insured, and police-checked window cleaners in minutes.</p>
           </div>
         </section>
@@ -259,7 +259,7 @@ function App() {
       <footer className="border-t border-black/10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 text-sm text-black/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <span>©2025 TidyJack</span>
+            <span>©2025 TidyJacks</span>
             <a href="#" className="underline hover:no-underline">Terms</a>
             <a href="#" className="underline hover:no-underline">Privacy</a>
           </div>

@@ -7,7 +7,7 @@ export default function HeroDog() {
           {/* Dog Image */}
           <img
             src="/dog.png"
-            alt="TidyJack dog illustration"
+            alt="TidyJacks dog illustration"
             className="w-full h-full max-w-xs sm:max-w-none object-contain z-10"
           />
           
@@ -100,7 +100,7 @@ export default function HeroDog() {
               <li className="flex items-start gap-2"><span>✔</span><span>Satisfaction guarantee or we'll make it right</span></li>
               <li className="flex items-start gap-2"><span>✔</span><span>24/7 support team to help whenever you need</span></li>
               <li className="flex items-start gap-2"><span>✔</span><span>Tailored services — from windows to deep cleans</span></li>
-              <li className="flex items-start gap-2"><span>✔</span><span>Join hundreds of Aussies who trust TidyJack</span></li>
+              <li className="flex items-start gap-2"><span>✔</span><span>Join hundreds of Aussies who trust TidyJacks</span></li>
               <li className="flex items-start gap-2"><span>✔</span><span>Walk into a fresh, clean space every time</span></li>
               <li className="flex items-start gap-2"><span>✔</span><span>Less stress, more shine</span></li>
             </ul>

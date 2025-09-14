@@ -321,7 +321,7 @@ app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) =
     const customerEmailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
         <div style="background: #2563eb; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">TidyJack</h1>
+          <h1 style="color: white; margin: 0; font-size: 28px;">TidyJacks</h1>
           <p style="color: white; margin: 10px 0 0 0; font-size: 18px;">Professional Cleaning Services</p>
           <p style="color: white; margin: 5px 0 0 0; font-size: 16px;">Booking Confirmation</p>
         </div>
@@ -329,7 +329,7 @@ app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) =
         <div style="background: white; padding: 30px; border-radius: 12px; border: 1px solid #e5e5e5;">
           <h2 style="color: #333; margin-top: 0;">Dear ${name},</h2>
           <p style="color: #666; font-size: 16px; line-height: 1.6;">
-            Thank you for choosing TidyJack Professional Cleaning Services. We have received your booking request and will contact you within 24 hours to confirm the details.
+            Thank you for choosing TidyJacks Professional Cleaning Services. We have received your booking request and will contact you within 24 hours to confirm the details.
           </p>
           
           <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -378,7 +378,7 @@ app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) =
           
           <div style="border-top: 1px solid #e5e5e5; padding-top: 20px; margin-top: 30px;">
             <p style="color: #666; font-size: 14px; margin: 0;">
-              <strong>TidyJack Professional Cleaning Services</strong><br>
+              <strong>TidyJacks Professional Cleaning Services</strong><br>
               <strong>📧 Contact Us Directly:</strong> <a href="mailto:hellotidyjack@gmail.com" style="color: #2563eb;">hellotidyjack@gmail.com</a><br>
               Have questions or need to discuss your booking? Email us directly and we'll respond quickly!
             </p>
@@ -390,7 +390,7 @@ app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) =
     const customerEmailText = `
 Dear ${name},
 
-Thank you for choosing TidyJack Professional Cleaning Services. We have received your booking request and will contact you within 24 hours to confirm the details.
+Thank you for choosing TidyJacks Professional Cleaning Services. We have received your booking request and will contact you within 24 hours to confirm the details.
 
 BOOKING DETAILS:
 - Booking ID: ${bookingDetails.bookingId}
@@ -424,7 +424,7 @@ ${bookingDetails.paymentType === 'deposit' ?
 NEXT STEPS:
 Our team will review your booking request and contact you within 24 hours to confirm availability and provide a detailed quote.
 
-TidyJack Professional Cleaning Services
+TidyJacks Professional Cleaning Services
 📧 CONTACT US DIRECTLY: hellotidyjack@gmail.com
 Have questions or need to discuss your booking? Email us directly and we'll respond quickly!
     `;
@@ -433,7 +433,7 @@ Have questions or need to discuss your booking? Email us directly and we'll resp
     const businessEmailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
         <div style="background: #2563eb; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
-          <h2 style="color: white; margin: 0;">New TidyJack Booking Received</h2>
+          <h2 style="color: white; margin: 0;">New TidyJacks Booking Received</h2>
         </div>
         
         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e5e5e5;">
@@ -536,7 +536,7 @@ Please contact the customer within 24 hours to confirm availability.
     // Send customer confirmation email
     await sendEmail({
       to: email,
-      subject: `TidyJack Booking Confirmation - Reference ${bookingDetails.bookingId}`,
+      subject: `TidyJacks Booking Confirmation - Reference ${bookingDetails.bookingId}`,
       html: customerEmailHtml,
       text: customerEmailText,
     });
@@ -546,7 +546,7 @@ Please contact the customer within 24 hours to confirm availability.
     
     await sendEmail({
       to: businessEmail,
-      subject: `New TidyJack Booking: ${serviceName} - ${name}`,
+      subject: `New TidyJacks Booking: ${serviceName} - ${name}`,
       html: businessEmailHtml,
       text: businessEmailText,
     });
@@ -626,7 +626,7 @@ app.post('/api/create-payment-intent', strictRateLimit, async (req, res) => {
         timeSlot: bookingData?.slot || '',
         date: bookingData?.date || ''
       },
-      description: `TidyJack ${bookingData?.service || 'Cleaning'} Service`
+      description: `TidyJacks ${bookingData?.service || 'Cleaning'} Service`
     });
 
     res.json({ 
@@ -715,7 +715,7 @@ async function sendPaymentConfirmationEmail(paymentIntent, status) {
       // Send final confirmation to customer
       await sendEmail({
         to: metadata.customerEmail,
-        subject: `Payment Confirmed - TidyJack Booking ${metadata.bookingType}`,
+        subject: `Payment Confirmed - TidyJacks Booking ${metadata.bookingType}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: #10b981; padding: 20px; border-radius: 8px; text-align: center; color: white;">
@@ -727,7 +727,7 @@ async function sendPaymentConfirmationEmail(paymentIntent, status) {
               <p><strong>Payment ID:</strong> ${paymentIntent.id}</p>
               <p><strong>Service:</strong> ${metadata.bookingType}</p>
               ${metadata.customerName ? `<p><strong>Customer:</strong> ${metadata.customerName}</p>` : ''}
-              <p>Thank you for choosing TidyJack Professional Cleaning Services!</p>
+              <p>Thank you for choosing TidyJacks Professional Cleaning Services!</p>
               
               <div style="border-top: 1px solid #e5e5e5; padding-top: 15px; margin-top: 20px;">
                 <p style="color: #666; font-size: 14px; margin: 0;">
@@ -747,7 +747,7 @@ Payment ID: ${paymentIntent.id}
 Service: ${metadata.bookingType}
 ${metadata.customerName ? `Customer: ${metadata.customerName}` : ''}
 
-Thank you for choosing TidyJack Professional Cleaning Services!
+Thank you for choosing TidyJacks Professional Cleaning Services!
 
 📧 CONTACT US DIRECTLY: hellotidyjack@gmail.com
 Have questions about your payment or service? Email us directly and we'll respond quickly!
@@ -775,14 +775,14 @@ Have questions about your payment or service? Email us directly and we'll respon
       // Send failure notification to customer
       await sendEmail({
         to: metadata.customerEmail,
-        subject: `Payment Issue - TidyJack Booking ${metadata.bookingType}`,
+        subject: `Payment Issue - TidyJacks Booking ${metadata.bookingType}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: #ef4444; padding: 20px; border-radius: 8px; text-align: center; color: white;">
               <h2>❌ Payment Issue</h2>
             </div>
             <div style="padding: 20px; background: #f8fafc; border-radius: 8px; margin-top: 20px;">
-              <p>We encountered an issue processing your payment for TidyJack cleaning services.</p>
+              <p>We encountered an issue processing your payment for TidyJacks cleaning services.</p>
               <p><strong>Amount:</strong> $${amount} AUD</p>
               <p><strong>Service:</strong> ${metadata.bookingType}</p>
               <p>Please contact us at hellotidyjack@gmail.com to resolve this issue.</p>
