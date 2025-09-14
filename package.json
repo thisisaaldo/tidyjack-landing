@@ -1,6 +1,7 @@
 {
   "name": "tidyjack-landing",
   "version": "1.0.0",
+  "type": "module",
   "description": "TidyJack Landing Page Design",
   "scripts": {
     "dev": "vite",
