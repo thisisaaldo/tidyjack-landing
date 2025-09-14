@@ -36,10 +36,12 @@ A professional window cleaning service landing page built with React, Vite, Type
 - Production port: 5000
 
 ## Recent Changes
-- 2024-09-14: **Deposit vs Full Payment Feature Completed** - Customers can now choose to pay 30% deposit (minimum $30) or full amount upfront
-- **Window Cleaning Specialization** - Business focus changed to window cleaning only with updated pricing tiers
+- 2024-09-14: **Complete Pricing Structure Overhaul** - New residential pricing ($150-$360) and retail storefront pricing ($25-$60) with exterior-only options at 60% of full pricing
+- **Smart Deposit Logic** - Deposit option (30% min $30) automatically hidden for low-cost services to prevent negative balances, with auto-switching to full payment
+- **Enhanced Service Selection** - Organized dropdown with residential (inside & out), residential (exterior only), and retail categories
+- **Deposit vs Full Payment Feature Completed** - Customers can choose deposit or full payment with intelligent availability based on service cost
 - **Afterpay Integration** - Added "Pay in 4" installment payment option alongside card payments
-- **Enhanced Security** - Server-side price validation and payment verification for both deposit and full amounts
+- **Enhanced Security** - Server-side price validation, payment verification, and service validation with proper error handling
 - Complete Stripe payment integration implemented
 - Added secure payment processing with server-side validation
 - Implemented multi-step booking flow (form → payment → confirmation)
