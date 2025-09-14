@@ -1258,12 +1258,12 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
           <div style="margin: 30px 0;">
             <div style="text-align: center; margin-bottom: 30px;">
               <h3 style="color: #333; margin-bottom: 15px;">📷 Before</h3>
-              <img src="${beforePhoto.file_url}" alt="Before cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+              <img src="https://www.tidyjacks.com${beforePhoto.file_url}" alt="Before cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             </div>
             
             <div style="text-align: center;">
               <h3 style="color: #333; margin-bottom: 15px;">✨ After</h3>
-              <img src="${afterPhoto.file_url}" alt="After cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+              <img src="https://www.tidyjacks.com${afterPhoto.file_url}" alt="After cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             </div>
           </div>
 
