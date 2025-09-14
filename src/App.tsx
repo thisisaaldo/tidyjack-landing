@@ -56,7 +56,7 @@ function App() {
                   animation: 'typewriter 3s steps(20, end) infinite, blink 1s step-end infinite'
                 }}
               >
-                Skip the mop and bucket
+                Crystal clear windows
               </span>
             </h1>
             
@@ -73,7 +73,7 @@ function App() {
               }
             `}</style>
             <p className="mt-3 text-black/70 text-lg md:text-xl">
-              Book professional cleaners online in minutes — no quotes, no hassle.
+              Book professional window cleaning online in minutes — no quotes, no hassle.
             </p>
           </div>
         </section>
@@ -94,94 +94,31 @@ function App() {
           </div>
         </section>
 
-        {/* Services */}
-        <section id="services" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Services</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 reveal-children">
-            <div className="card p-4">
-              <div className="font-medium">Window Cleaning</div>
-              <p className="text-sm text-black/70">Inside & outside, frames & sills.</p>
-              <div className="text-sm mt-2">From $99</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Home Cleaning</div>
-              <p className="text-sm text-black/70">General inside clean.</p>
-              <div className="text-sm mt-2">From $119</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Office Cleaning</div>
-              <p className="text-sm text-black/70">Workspaces, reception, amenities.</p>
-              <div className="text-sm mt-2">From $129</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Deep Cleaning</div>
-              <p className="text-sm text-black/70">Detailed top‑to‑bottom clean.</p>
-              <div className="text-sm mt-2">From $199</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Carpet Cleaning</div>
-              <p className="text-sm text-black/70">Refresh high‑traffic areas.</p>
-              <div className="text-sm mt-2">From $89</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Oven Cleaning</div>
-              <p className="text-sm text-black/70">Degrease & polish.</p>
-              <div className="text-sm mt-2">From $79</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">End‑of‑Lease</div>
-              <p className="text-sm text-black/70">Bond‑ready standard.</p>
-              <div className="text-sm mt-2">From $249</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Eco‑Friendly</div>
-              <p className="text-sm text-black/70">Green products on request.</p>
-              <div className="text-sm mt-2">Add‑on</div>
-            </div>
-          </div>
-        </section>
 
         {/* Pricing */}
         <section id="pricing" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pricing</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 reveal-children">
-            <div className="card p-4">
-              <div className="text-xs uppercase tracking-wide text-black/55 mb-1">Windows</div>
-              <div className="font-medium">Up to 20</div>
-              <div className="text-sm text-black/80">$99–$149</div>
+          <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Window Cleaning Pricing</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 reveal-children">
+            <div className="card p-6">
+              <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Residential</div>
+              <div className="font-semibold text-lg">Up to 20 Windows</div>
+              <div className="text-2xl font-bold text-blue-600 mt-2">$99</div>
+              <p className="text-sm text-black/70 mt-2">Inside & outside cleaning, frames & sills included</p>
             </div>
-            <div className="card p-4">
-              <div className="text-xs uppercase tracking-wide text-black/55 mb-1">Windows</div>
-              <div className="font-medium">21–40</div>
-              <div className="text-sm text-black/80">$149–$249</div>
+            <div className="card p-6">
+              <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Large Home</div>
+              <div className="font-semibold text-lg">21–40 Windows</div>
+              <div className="text-2xl font-bold text-blue-600 mt-2">$179</div>
+              <p className="text-sm text-black/70 mt-2">Complete home window cleaning service</p>
             </div>
-            <div className="card p-4">
-              <div className="text-xs uppercase tracking-wide text-black/55 mb-1">Windows</div>
-              <div className="font-medium">41–60</div>
-              <div className="text-sm text-black/80">$249–$399</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Home Cleaning</div>
-              <div className="text-sm text-black/80">From $119</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Office Cleaning</div>
-              <div className="text-sm text-black/80">From $129</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Deep Cleaning</div>
-              <div className="text-sm text-black/80">From $199</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Carpet Cleaning</div>
-              <div className="text-sm text-black/80">From $89</div>
-            </div>
-            <div className="card p-4">
-              <div className="font-medium">Oven Cleaning</div>
-              <div className="text-sm text-black/80">From $79</div>
+            <div className="card p-6">
+              <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Commercial</div>
+              <div className="font-semibold text-lg">Custom Quote</div>
+              <div className="text-2xl font-bold text-blue-600 mt-2">$299+</div>
+              <p className="text-sm text-black/70 mt-2">Office buildings, storefronts & large properties</p>
             </div>
           </div>
-          <p className="text-xs text-black/60 mt-2">Final price confirmed after details. Deposits available.</p>
+          <p className="text-sm text-black/60 mt-4 text-center">All prices include inside & outside cleaning, frames, and sills. Final price confirmed after property assessment.</p>
         </section>
 
         {/* Areas */}
@@ -226,16 +163,16 @@ function App() {
               </p>
             </details>
             <details className="card p-4">
-              <summary className="cursor-pointer font-medium">What's included in the clean?</summary>
+              <summary className="cursor-pointer font-medium">What's included in window cleaning?</summary>
               <p className="text-sm text-black/70 mt-2">
-                Standard services cover general cleaning (dusting, vacuuming, wiping surfaces, and bathrooms).
-                Extras like carpet, oven, or deep cleaning can be added during booking.
+                Complete window cleaning service includes inside and outside window cleaning, frames, sills, and screens.
+                We use professional-grade equipment and eco-friendly cleaning solutions for streak-free results.
               </p>
             </details>
             <details className="card p-4">
-              <summary className="cursor-pointer font-medium">Are cleaners insured and police‑checked?</summary>
+              <summary className="cursor-pointer font-medium">Are window cleaners insured and police‑checked?</summary>
               <p className="text-sm text-black/70 mt-2">
-                Absolutely. All TidyJack cleaners are vetted, insured, and police‑checked for your peace of mind.
+                Absolutely. All TidyJack window cleaning professionals are vetted, insured, and police‑checked for your peace of mind.
               </p>
             </details>
           </div>
@@ -257,8 +194,8 @@ function App() {
         {/* CTA footer */}
         <section className="py-10 border-t border-black/10">
           <div className="text-center">
-            <h3 className="font-display text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TidyJack — Australia's cleaning network</h3>
-            <p className="mt-2 text-black/70">Book trusted, insured, and police-checked cleaners in minutes.</p>
+            <h3 className="font-display text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TidyJack — Australia's window cleaning experts</h3>
+            <p className="mt-2 text-black/70">Book trusted, insured, and police-checked window cleaners in minutes.</p>
           </div>
         </section>
       </main>

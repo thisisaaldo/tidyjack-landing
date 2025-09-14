@@ -1,7 +1,7 @@
 # TidyJack Landing Page
 
 ## Overview
-A professional cleaning services landing page built with React, Vite, TypeScript, and Tailwind CSS. This is a responsive website for an Australian cleaning service company called TidyJack that allows users to book cleaning services online.
+A professional window cleaning service landing page built with React, Vite, TypeScript, and Tailwind CSS. This is a responsive website for an Australian window cleaning business called TidyJack that allows users to book window cleaning services online.
 
 ## Project Architecture
 - **Frontend Framework**: React 18 with TypeScript

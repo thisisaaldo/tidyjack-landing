@@ -122,7 +122,7 @@ export default function BookingForm() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 mb-2">Booking Summary</h3>
           <div className="text-sm text-blue-800 space-y-1">
-            <p><strong>Service:</strong> {formData.service.charAt(0).toUpperCase() + formData.service.slice(1)} Cleaning</p>
+            <p><strong>Service:</strong> Window Cleaning</p>
             <p><strong>Date:</strong> {formData.date}</p>
             <p><strong>Time:</strong> {
               formData.slot === 'weekday_afternoon' ? 'Weekday Afternoon (3pm-6pm)' :
@@ -218,26 +218,6 @@ export default function BookingForm() {
         />
       </div>
 
-      <div>
-        <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-1">
-          Service
-        </label>
-        <select
-          id="service"
-          name="service"
-          value={formData.service}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="windows">Window Cleaning</option>
-          <option value="home">Home Cleaning</option>
-          <option value="office">Office Cleaning</option>
-          <option value="deep">Deep Cleaning</option>
-          <option value="carpet">Carpet Cleaning</option>
-          <option value="oven">Oven Cleaning</option>
-          <option value="endoflease">End-of-Lease</option>
-        </select>
-      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
