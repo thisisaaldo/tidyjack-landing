@@ -1279,6 +1279,36 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Both before and after photos are required' });
     }
 
+    // Read photo files for email attachments
+    const fs = require('fs').promises;
+    const path = require('path');
+    
+    let beforePhotoData = null;
+    let afterPhotoData = null;
+    
+    try {
+      // Read before photo (file_path is like "/tidyjacks-photos/filename.jpg")
+      const beforePath = path.join(__dirname, 'uploads', beforePhoto.file_path.substring(1)); // Remove leading slash
+      const beforeBuffer = await fs.readFile(beforePath);
+      beforePhotoData = {
+        filename: `Before-Photo-${booking.booking_id}.jpg`,
+        content: beforeBuffer.toString('base64'),
+        contentType: 'image/jpeg'
+      };
+      
+      // Read after photo  
+      const afterPath = path.join(__dirname, 'uploads', afterPhoto.file_path.substring(1)); // Remove leading slash
+      const afterBuffer = await fs.readFile(afterPath);
+      afterPhotoData = {
+        filename: `After-Photo-${booking.booking_id}.jpg`,
+        content: afterBuffer.toString('base64'),
+        contentType: 'image/jpeg'
+      };
+    } catch (fileError) {
+      console.error('Error reading photo files for attachment:', fileError);
+      return res.status(500).json({ error: 'Could not read photo files for email' });
+    }
+
     // Send email using Replit Mail
     const { sendMail } = require('./server/replitmail.cjs');
     
@@ -1295,19 +1325,18 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
           <p style="color: #666; line-height: 1.6;">
             Hi ${customer.name},<br><br>
             Great news! We've completed your window cleaning service for booking <strong>${booking.booking_id}</strong>. 
-            Here are the before and after photos showing the fantastic results:
+            Please see the attached before and after photos showing the fantastic results:
           </p>
 
-          <div style="margin: 30px 0;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h3 style="color: #333; margin-bottom: 15px;">📷 Before</h3>
-              <img src="https://www.tidyjacks.com/api/public/photos${beforePhoto.file_path}" alt="Before cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-            </div>
-            
-            <div style="text-align: center;">
-              <h3 style="color: #333; margin-bottom: 15px;">✨ After</h3>
-              <img src="https://www.tidyjacks.com/api/public/photos${afterPhoto.file_path}" alt="After cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-            </div>
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 30px 0; text-align: center;">
+            <h3 style="color: #333; margin-top: 0;">📎 Attached Photos</h3>
+            <p style="color: #666; margin: 0;">
+              • Before-Photo-${booking.booking_id}.jpg<br>
+              • After-Photo-${booking.booking_id}.jpg
+            </p>
+            <p style="color: #999; font-size: 14px; margin-top: 10px;">
+              Click on the attachments to view or save your photos
+            </p>
           </div>
 
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -1343,7 +1372,8 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       to: customer.email,
       subject: `✨ Job Complete - Before & After Photos (${booking.booking_id})`,
       html: emailHtml,
-      text: `Hi ${customer.name}, your window cleaning service is complete! Visit https://www.tidyjacks.com to view your before and after photos.`
+      text: `Hi ${customer.name}, your window cleaning service is complete! Please see the attached before and after photos showing the fantastic results.`,
+      attachments: [beforePhotoData, afterPhotoData]
     });
 
     res.json({ success: true, message: 'Photos sent successfully' });
