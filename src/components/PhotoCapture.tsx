@@ -91,31 +91,31 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onPhotoCaptured, photoType,
   const photoIcon = photoType === 'before' ? '😔' : '✨';
 
   return (
-    <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-4">
+    <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-4 sm:p-6">
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-3">
           {photoIcon} Capture {photoTypeDisplay} Photo
         </h3>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-md mb-4">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
             {error}
           </div>
         )}
 
         {!isStreaming && !isCaptured && (
-          <div className="space-y-4">
-            <div className="text-gray-500 text-sm mb-4">
+          <div className="space-y-6">
+            <div className="text-gray-600 text-base mb-4 px-2">
               Take a photo to show the {photoType === 'before' ? 'current state of the windows' : 'sparkling clean results'}
             </div>
             <button
               onClick={startCamera}
               disabled={disabled}
-              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+              className={`min-h-[56px] px-8 py-4 rounded-xl font-semibold text-lg transition-colors w-full sm:w-auto ${
                 disabled
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+                  : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+              } flex items-center justify-center`}
             >
               📸 Start Camera
             </button>
@@ -123,37 +123,37 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onPhotoCaptured, photoType,
         )}
 
         {isStreaming && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="relative">
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
                 muted
-                className="w-full max-w-md mx-auto rounded-lg shadow-lg"
+                className="w-full max-w-sm mx-auto rounded-xl shadow-xl border-4 border-gray-200"
                 style={{ transform: 'scaleX(-1)' }} // Mirror effect like a selfie camera
               />
               
-              {/* Camera overlay guide */}
+              {/* Camera overlay guide - Mobile Optimized */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="border-2 border-white/60 rounded-lg w-80 h-60 flex items-center justify-center">
-                  <span className="text-white/80 text-sm bg-black/50 px-2 py-1 rounded">
+                <div className="border-2 border-white/70 rounded-lg flex items-center justify-center" style={{width: '85%', height: '70%'}}>
+                  <span className="text-white text-sm bg-black/60 px-3 py-2 rounded-lg font-medium">
                     Position windows in frame
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={capturePhoto}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                className="min-h-[56px] px-8 py-4 bg-green-600 text-white rounded-xl font-semibold text-lg hover:bg-green-700 active:bg-green-800 transition-colors flex items-center justify-center"
               >
                 📷 Capture Photo
               </button>
               <button
                 onClick={stopCamera}
-                className="px-4 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
+                className="min-h-[56px] px-8 py-4 bg-gray-600 text-white rounded-xl font-semibold text-lg hover:bg-gray-700 active:bg-gray-800 transition-colors flex items-center justify-center"
               >
                 ❌ Cancel
               </button>
@@ -162,13 +162,13 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onPhotoCaptured, photoType,
         )}
 
         {isCaptured && (
-          <div className="space-y-4">
-            <div className="text-green-600 font-medium">
+          <div className="space-y-6">
+            <div className="text-green-600 font-semibold text-lg">
               ✅ {photoTypeDisplay} photo captured successfully!
             </div>
             <button
               onClick={retakePhoto}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="min-h-[56px] px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold text-lg hover:bg-blue-700 active:bg-blue-800 transition-colors w-full sm:w-auto flex items-center justify-center"
             >
               🔄 Retake Photo
             </button>

@@ -355,7 +355,7 @@ const AdminDashboard = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="relative block w-full min-h-[48px] px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 text-base"
                 placeholder="Enter admin password"
               />
             </div>
@@ -367,7 +367,7 @@ const AdminDashboard = () => {
             <div>
               <button
                 onClick={handleLogin}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="group relative w-full flex justify-center min-h-[48px] py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
                 Access Dashboard
               </button>
@@ -381,13 +381,13 @@ const AdminDashboard = () => {
   // Main dashboard
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex justify-between items-center py-4 min-h-[80px]">
             <div className="flex items-center">
-              <span className="text-2xl mr-3">🐾</span>
-              <h1 className="text-2xl font-bold text-gray-900">TidyJacks Admin</h1>
+              <span className="text-3xl mr-3">🐾</span>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">TidyJacks Admin</h1>
             </div>
             <button
               onClick={() => {
@@ -395,7 +395,7 @@ const AdminDashboard = () => {
                 setAuthToken('');
                 setPassword('');
               }}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="min-h-[44px] min-w-[44px] px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
             >
               Logout
             </button>
@@ -403,35 +403,37 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation - Mobile Optimized with Horizontal Scroll */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
-            {[
-              { key: 'overview', label: 'Overview' },
-              { key: 'bookings', label: 'Bookings' },
-              { key: 'customers', label: 'Customers' },
-              { key: 'payments', label: 'Outstanding Payments' },
-              { key: 'photos', label: '📸 Photos' }
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.key
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+        <div className="max-w-7xl mx-auto">
+          <nav className="flex overflow-x-auto scrollbar-hide px-4 sm:px-6 lg:px-8">
+            <div className="flex space-x-1 min-w-max">
+              {[
+                { key: 'overview', label: 'Overview' },
+                { key: 'bookings', label: 'Bookings' },
+                { key: 'customers', label: 'Customers' },
+                { key: 'payments', label: 'Payments' },
+                { key: 'photos', label: '📸 Photos' }
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as any)}
+                  className={`min-h-[48px] px-4 py-3 border-b-2 font-medium text-sm whitespace-nowrap flex items-center justify-center ${
+                    activeTab === tab.key
+                      ? 'border-blue-500 text-blue-600 bg-blue-50'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                  } transition-colors rounded-t-lg`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </nav>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Content - Mobile Optimized Spacing */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {loading && (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -444,9 +446,9 @@ const AdminDashboard = () => {
             <p className="text-red-600">{error}</p>
             <button
               onClick={() => loadDashboardData()}
-              className="mt-2 text-sm text-red-700 underline hover:text-red-900"
+              className="mt-3 min-h-[44px] px-4 py-2 text-sm text-red-700 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors font-medium"
             >
-              Retry
+              🔄 Retry Loading
             </button>
           </div>
         )}
@@ -456,8 +458,8 @@ const AdminDashboard = () => {
             {/* Overview Tab */}
             {activeTab === 'overview' && dashboardData && (
               <div className="space-y-6">
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                {/* Stats Cards - Mobile Optimized */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                   <div className="bg-white p-6 rounded-lg shadow">
                     <h3 className="text-sm font-medium text-gray-500">Total Customers</h3>
                     <p className="text-3xl font-bold text-gray-900">{dashboardData.totalCustomers}</p>
@@ -480,20 +482,20 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                {/* Recent Bookings */}
+                {/* Recent Bookings - Mobile Optimized */}
                 <div className="bg-white shadow rounded-lg">
-                  <div className="px-6 py-4 border-b border-gray-200">
+                  <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
                     <h3 className="text-lg font-medium text-gray-900">Recent Bookings</h3>
                   </div>
                   <div className="divide-y divide-gray-200">
                     {dashboardData.recentBookings.map((booking) => (
-                      <div key={booking.id} className="px-6 py-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{booking.booking_id}</p>
-                            <p className="text-sm text-gray-500">{booking.service_name}</p>
+                      <div key={booking.id} className="px-4 sm:px-6 py-4">
+                        <div className="flex items-start justify-between space-x-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{booking.booking_id}</p>
+                            <p className="text-sm text-gray-500 mt-1">{booking.service_name}</p>
                           </div>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getPaymentStatusColor(booking.payment_status)}`}>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border shrink-0 ${getPaymentStatusColor(booking.payment_status)}`}>
                             {booking.payment_status.replace('_', ' ')}
                           </span>
                         </div>
@@ -515,16 +517,16 @@ const AdminDashboard = () => {
 
                   {!selectedBooking ? (
                     <div className="p-6">
-                      <h4 className="text-md font-medium text-gray-900 mb-4">Select a Booking for Photo Capture</h4>
+                      <h4 className="text-lg font-medium text-gray-900 mb-4">Select a Booking for Photo Capture</h4>
                       {dashboardData?.recentBookings && dashboardData.recentBookings.length > 0 ? (
-                        <div className="grid gap-4">
+                        <div className="space-y-4">
                           {dashboardData.recentBookings.map((booking) => (
                             <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-gray-900">{booking.booking_id}</p>
-                                  <p className="text-sm text-gray-500">{booking.service_name}</p>
-                                  <p className="text-xs text-gray-400">Date: {formatSafeDate(booking.booking_date)}</p>
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0 sm:space-x-4">
+                                <div className="flex-1">
+                                  <p className="text-base font-medium text-gray-900">{booking.booking_id}</p>
+                                  <p className="text-sm text-gray-500 mt-1">{booking.service_name}</p>
+                                  <p className="text-xs text-gray-400 mt-1">Date: {formatSafeDate(booking.booking_date)}</p>
                                 </div>
                                 <button
                                   onClick={() => {
@@ -532,7 +534,7 @@ const AdminDashboard = () => {
                                     setPhotoUploadState({ before: false, after: false });
                                     setPhotoMessage('');
                                   }}
-                                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                                  className="min-h-[48px] px-6 py-3 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 transition-colors w-full sm:w-auto flex items-center justify-center"
                                 >
                                   📷 Take Photos
                                 </button>
@@ -549,7 +551,7 @@ const AdminDashboard = () => {
                       <div className="mb-6">
                         <button
                           onClick={() => setSelectedBooking(null)}
-                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                          className="min-h-[44px] px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-sm font-medium rounded-lg transition-colors flex items-center"
                         >
                           ← Back to booking selection
                         </button>
@@ -571,7 +573,7 @@ const AdminDashboard = () => {
                         </div>
                       )}
 
-                      <div className="grid md:grid-cols-2 gap-6">
+                      <div className="grid gap-6">
                         <PhotoCapture
                           photoType="before"
                           onPhotoCaptured={(blob) => uploadPhoto(blob, selectedBooking.id, 'before')}
