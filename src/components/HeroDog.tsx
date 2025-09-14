@@ -3,34 +3,68 @@ export default function HeroDog() {
     <div className="grid grid-rows-2 gap-4 h-full">
       {/* Top card: image */}
       <div className="h-full relative overflow-hidden reveal card bg-gradient-to-br from-blue-50 to-cyan-50">
-        <div className="flex items-center justify-center h-full p-8 relative">
+        <div className="flex items-center justify-center h-full p-4 relative">
           {/* Dog Image */}
           <img
             src="/dog.png"
             alt="TidyJack dog illustration"
-            className="w-full h-full max-w-64 max-h-64 object-contain z-10"
+            className="w-full h-full object-contain z-10"
           />
           
-          {/* Animated Bubbles */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Bubble 1 */}
-            <div className="absolute top-16 left-12 w-6 h-6 rounded-full bg-white/70 border border-blue-200 animate-bounce" style={{animationDelay: '0s', animationDuration: '3s'}}></div>
+          {/* Animated Bubbles and Sparkles */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 300">
+            {/* Bubble 1 - Large */}
+            <circle cx="120" cy="80" r="12" fill="rgba(255,255,255,0.7)" stroke="rgba(0,150,255,0.3)" strokeWidth="1">
+              <animate attributeName="cy" values="80;60;80" dur="3s" repeatCount="indefinite" />
+            </circle>
             
-            {/* Bubble 2 */}
-            <div className="absolute top-12 right-16 w-4 h-4 rounded-full bg-white/70 border border-blue-200 animate-bounce" style={{animationDelay: '0.5s', animationDuration: '2.5s'}}></div>
+            {/* Bubble 2 - Medium */}
+            <circle cx="300" cy="70" r="8" fill="rgba(255,255,255,0.7)" stroke="rgba(0,150,255,0.3)" strokeWidth="1">
+              <animate attributeName="cy" values="70;50;70" dur="2.5s" repeatCount="indefinite" />
+            </circle>
             
-            {/* Bubble 3 */}
-            <div className="absolute top-8 left-20 w-3 h-3 rounded-full bg-white/70 border border-blue-200 animate-bounce" style={{animationDelay: '1s', animationDuration: '2s'}}></div>
+            {/* Bubble 3 - Small */}
+            <circle cx="150" cy="50" r="6" fill="rgba(255,255,255,0.7)" stroke="rgba(0,150,255,0.3)" strokeWidth="1">
+              <animate attributeName="cy" values="50;35;50" dur="2s" repeatCount="indefinite" />
+            </circle>
             
-            {/* Bubble 4 */}
-            <div className="absolute top-10 right-24 w-5 h-5 rounded-full bg-white/70 border border-blue-200 animate-bounce" style={{animationDelay: '1.5s', animationDuration: '2.8s'}}></div>
+            {/* Bubble 4 - Medium */}
+            <circle cx="260" cy="60" r="10" fill="rgba(255,255,255,0.7)" stroke="rgba(0,150,255,0.3)" strokeWidth="1">
+              <animate attributeName="cy" values="60;45;60" dur="2.8s" repeatCount="indefinite" />
+            </circle>
             
-            {/* Bubble 5 */}
-            <div className="absolute top-20 left-28 w-4 h-4 rounded-full bg-white/70 border border-blue-200 animate-bounce" style={{animationDelay: '2s', animationDuration: '3.2s'}}></div>
+            {/* Sparkle 1 */}
+            <g transform="translate(80,90)">
+              <path d="M0,-8 L2,2 L8,0 L2,2 L0,8 L-2,2 L-8,0 L-2,2 Z" fill="rgba(255,255,255,0.8)">
+                <animateTransform attributeName="transform" type="rotate" values="0;360" dur="4s" repeatCount="indefinite"/>
+              </path>
+            </g>
             
-            {/* Bubble 6 */}
-            <div className="absolute top-6 right-32 w-3 h-3 rounded-full bg-white/70 border border-blue-200 animate-bounce" style={{animationDelay: '2.5s', animationDuration: '2.2s'}}></div>
-          </div>
+            {/* Sparkle 2 */}
+            <g transform="translate(320,100)">
+              <path d="M0,-6 L1.5,1.5 L6,0 L1.5,1.5 L0,6 L-1.5,1.5 L-6,0 L-1.5,1.5 Z" fill="rgba(255,255,255,0.8)">
+                <animateTransform attributeName="transform" type="rotate" values="0;360" dur="3s" repeatCount="indefinite"/>
+              </path>
+            </g>
+            
+            {/* Sparkle 3 */}
+            <g transform="translate(200,40)">
+              <path d="M0,-4 L1,1 L4,0 L1,1 L0,4 L-1,1 L-4,0 L-1,1 Z" fill="rgba(255,255,255,0.8)">
+                <animateTransform attributeName="transform" type="rotate" values="0;360" dur="5s" repeatCount="indefinite"/>
+              </path>
+            </g>
+            
+            {/* Small dots/sparkles */}
+            <circle cx="180" cy="120" r="2" fill="rgba(255,255,255,0.6)">
+              <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="100" cy="140" r="1.5" fill="rgba(255,255,255,0.6)">
+              <animate attributeName="opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="280" cy="130" r="2.5" fill="rgba(255,255,255,0.6)">
+              <animate attributeName="opacity" values="0.6;1;0.6" dur="2.2s" repeatCount="indefinite" />
+            </circle>
+          </svg>
         </div>
         
         {/* Speech bubble */}
