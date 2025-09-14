@@ -101,7 +101,14 @@ const AdminDashboard = () => {
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
+      // Try to get the actual error message from the response
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      } catch (jsonError) {
+        // If response isn't JSON, use status text
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
     }
 
     return response.json();
