@@ -15,15 +15,32 @@ function App() {
             🐾 TidyJack
           </a>
           <nav className="hidden sm:flex items-center gap-3 text-sm">
-            <a href="#services" className="hover:underline">Services</a>
-            <a href="#pricing" className="hover:underline">Pricing</a>
-            <a href="#areas" className="hover:underline">Areas</a>
-            <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-black/90 transition-colors">
-              Book Now
+            <button 
+              onClick={() => {
+                document.getElementById('book')?.scrollIntoView({ 
+                  behavior: 'smooth',
+                  block: 'start'
+                });
+              }}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 hover:shadow-lg transition-all duration-300 ease-in-out animate-pulse hover:animate-none relative overflow-hidden group"
+            >
+              <span className="relative z-10 font-semibold">Book Now</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </button>
           </nav>
           <div className="sm:hidden flex items-center gap-1">
-            <button className="text-xs hover:underline px-1 py-1">Menu</button>
+            <button 
+              onClick={() => {
+                document.getElementById('book')?.scrollIntoView({ 
+                  behavior: 'smooth',
+                  block: 'start'
+                });
+              }}
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+            >
+              Book Now
+            </button>
           </div>
         </div>
       </header>
@@ -32,16 +49,36 @@ function App() {
         {/* Marketing headline */}
         <section className="mb-8 reveal">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight">
-              Skip the mop and bucket
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span 
+                className="inline-block overflow-hidden whitespace-nowrap border-r-2 sm:border-r-4 border-blue-600 animate-pulse"
+                style={{
+                  animation: 'typewriter 3s steps(20, end) infinite, blink 1s step-end infinite'
+                }}
+              >
+                Skip the mop and bucket
+              </span>
             </h1>
+            
+            <style jsx>{`
+              @keyframes typewriter {
+                0% { width: 0; }
+                50% { width: 100%; }
+                100% { width: 100%; }
+              }
+              
+              @keyframes blink {
+                0%, 50% { border-color: transparent; }
+                51%, 100% { border-color: #2563eb; }
+              }
+            `}</style>
             <p className="mt-3 text-black/70 text-lg md:text-xl">
               Book professional cleaners online in minutes — no quotes, no hassle.
             </p>
           </div>
         </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mb-6 reveal-children">
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch mb-6 reveal-children">
           {/* Booking form */}
           <div className="grid gap-4 h-full" id="book">
             <div className="h-full glass shadow-md reveal card p-6">
@@ -59,7 +96,7 @@ function App() {
 
         {/* Services */}
         <section id="services" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-4">Services</h2>
+          <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Services</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 reveal-children">
             <div className="card p-4">
               <div className="font-medium">Window Cleaning</div>
@@ -106,7 +143,7 @@ function App() {
 
         {/* Pricing */}
         <section id="pricing" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-4">Pricing</h2>
+          <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pricing</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 reveal-children">
             <div className="card p-4">
               <div className="text-xs uppercase tracking-wide text-black/55 mb-1">Windows</div>
@@ -149,8 +186,8 @@ function App() {
 
         {/* Areas */}
         <section id="areas" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-3">Browse by Australian destination</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 reveal-children">
+          <h2 className="font-display text-2xl font-semibold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Browse by Australian destination</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 reveal-children">
             {[
               { city: 'Sydney', cityAbbr: 'SYD', stateAbbr: 'NSW', state: 'New South Wales' },
               { city: 'Melbourne', cityAbbr: 'MEL', stateAbbr: 'VIC', state: 'Victoria' },
@@ -172,7 +209,7 @@ function App() {
 
         {/* FAQ */}
         <section id="faq" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-4">FAQ</h2>
+          <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">FAQ</h2>
           <div className="grid gap-3 reveal-children">
             <details className="card p-4">
               <summary className="cursor-pointer font-medium">How does pricing work?</summary>
@@ -220,7 +257,7 @@ function App() {
         {/* CTA footer */}
         <section className="py-10 border-t border-black/10">
           <div className="text-center">
-            <h3 className="font-display text-xl sm:text-2xl font-semibold">TidyJack — Australia's cleaning network</h3>
+            <h3 className="font-display text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TidyJack — Australia's cleaning network</h3>
             <p className="mt-2 text-black/70">Book trusted, insured, and police-checked cleaners in minutes.</p>
           </div>
         </section>
@@ -232,7 +269,6 @@ function App() {
             <span>©2025 TidyJack</span>
             <a href="#" className="underline hover:no-underline">Terms</a>
             <a href="#" className="underline hover:no-underline">Privacy</a>
-            <a href="#" className="underline hover:no-underline">Cookies</a>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
             <a href="#" aria-label="Facebook" className="group">
@@ -246,6 +282,17 @@ function App() {
                 <rect x="4" y="4" width="16" height="16" rx="4"/>
                 <circle cx="12" cy="12" r="3.5"/>
                 <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="YouTube" className="group">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-black/80 group-hover:text-black">
+                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
+                <polygon points="9.75,15.02 15.5,11.75 9.75,8.48"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="TikTok" className="group">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-black/80 group-hover:text-black">
+                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
               </svg>
             </a>
             <a href="#" aria-label="Blog" className="px-3 py-1.5 rounded-lg border border-black/20 text-sm hover:bg-black/5">BLOG</a>
