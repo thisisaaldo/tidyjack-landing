@@ -92,6 +92,11 @@ const AdminDashboard = () => {
   const apiCall = async (endpoint: string, token?: string, options: RequestInit = {}) => {
     const authTokenToUse = token || authToken;
     
+    console.log('API Call Debug:');
+    console.log('- Endpoint:', endpoint);
+    console.log('- Full URL:', `/api/admin${endpoint}`);
+    console.log('- Token available:', authTokenToUse ? 'Yes' : 'No');
+    
     // Defensive header merging to avoid Safari issues
     const baseHeaders = {
       'Authorization': `Bearer ${authTokenToUse}`,
@@ -112,10 +117,15 @@ const AdminDashboard = () => {
     const finalHeaders = { ...baseHeaders, ...extraHeaders };
     const { headers: _ignored, ...rest } = options || {};
     
+    console.log('- Final headers:', finalHeaders);
+    
     const response = await fetch(`/api/admin${endpoint}`, {
       ...rest,
       headers: finalHeaders
     });
+
+    console.log('- Response status:', response.status);
+    console.log('- Response content-type:', response.headers.get('content-type'));
 
     if (!response.ok) {
       // Try to get the actual error message from the response
@@ -123,8 +133,14 @@ const AdminDashboard = () => {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       } catch (jsonError) {
-        // If response isn't JSON, use status text
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // If response isn't JSON, get the text to see what we're actually receiving
+        try {
+          const responseText = await response.text();
+          console.log('Non-JSON response text:', responseText.substring(0, 200));
+          throw new Error(`HTTP ${response.status}: Got HTML instead of JSON - ${responseText.substring(0, 100)}...`);
+        } catch (textError) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
       }
     }
 
@@ -286,6 +302,9 @@ const AdminDashboard = () => {
     
     try {
       console.log('Loading dashboard data...');
+      console.log('Using token:', token ? 'Token provided' : 'Using stored token');
+      console.log('Auth token:', authToken ? 'Auth token exists' : 'No auth token');
+      
       const rawData = await apiCall('/dashboard', token);
       console.log('Raw dashboard data received:', rawData);
       
