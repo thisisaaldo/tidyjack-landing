@@ -1272,40 +1272,47 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
     }
 
     const photos = await PhotoStorage.getByBookingId(numericBookingId);
-    const beforePhoto = photos.find(p => p.photo_type === 'before');
-    const afterPhoto = photos.find(p => p.photo_type === 'after');
+    const beforePhotos = photos.filter(p => p.photo_type === 'before');
+    const afterPhotos = photos.filter(p => p.photo_type === 'after');
 
-    if (!beforePhoto || !afterPhoto) {
+    if (beforePhotos.length === 0 || afterPhotos.length === 0) {
       return res.status(400).json({ error: 'Both before and after photos are required' });
     }
 
-    // Read photo files for email attachments
+    // Read all photo files for email attachments
     const fs = require('fs').promises;
     const path = require('path');
     
-    let beforePhotoData = null;
-    let afterPhotoData = null;
+    const attachments = [];
     
     try {
-      // Read before photo (file_path is like "/tidyjacks-photos/filename.jpg")
-      const beforePath = path.join(__dirname, 'uploads', beforePhoto.file_path.substring(1)); // Remove leading slash
-      const beforeBuffer = await fs.readFile(beforePath);
-      beforePhotoData = {
-        filename: `Before-Photo-${booking.booking_id}.jpg`,
-        content: beforeBuffer.toString('base64'),
-        contentType: 'image/jpeg',
-        encoding: 'base64'
-      };
+      // Process before photos
+      for (let i = 0; i < beforePhotos.length; i++) {
+        const photo = beforePhotos[i];
+        const photoPath = path.join(__dirname, 'uploads', photo.file_path.substring(1)); // Remove leading slash
+        const photoBuffer = await fs.readFile(photoPath);
+        
+        attachments.push({
+          filename: `Before-Photo-${i + 1}-${booking.booking_id}.jpg`,
+          content: photoBuffer.toString('base64'),
+          contentType: 'image/jpeg',
+          encoding: 'base64'
+        });
+      }
       
-      // Read after photo  
-      const afterPath = path.join(__dirname, 'uploads', afterPhoto.file_path.substring(1)); // Remove leading slash
-      const afterBuffer = await fs.readFile(afterPath);
-      afterPhotoData = {
-        filename: `After-Photo-${booking.booking_id}.jpg`,
-        content: afterBuffer.toString('base64'),
-        contentType: 'image/jpeg',
-        encoding: 'base64'
-      };
+      // Process after photos
+      for (let i = 0; i < afterPhotos.length; i++) {
+        const photo = afterPhotos[i];
+        const photoPath = path.join(__dirname, 'uploads', photo.file_path.substring(1)); // Remove leading slash
+        const photoBuffer = await fs.readFile(photoPath);
+        
+        attachments.push({
+          filename: `After-Photo-${i + 1}-${booking.booking_id}.jpg`,
+          content: photoBuffer.toString('base64'),
+          contentType: 'image/jpeg',
+          encoding: 'base64'
+        });
+      }
     } catch (fileError) {
       console.error('Error reading photo files for attachment:', fileError);
       return res.status(500).json({ error: 'Could not read photo files for email' });
@@ -1331,12 +1338,18 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
           </p>
 
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 30px 0; text-align: center;">
-            <h3 style="color: #333; margin-top: 0;">📎 Attached Photos</h3>
-            <p style="color: #666; margin: 0;">
-              • Before-Photo-${booking.booking_id}.jpg<br>
-              • After-Photo-${booking.booking_id}.jpg
-            </p>
-            <p style="color: #999; font-size: 14px; margin-top: 10px;">
+            <h3 style="color: #333; margin-top: 0;">📎 Attached Photos (${attachments.length} total)</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0;">
+              <div>
+                <h4 style="color: #0066cc; margin: 0 0 8px 0; font-size: 14px;">📷 Before (${beforePhotos.length})</h4>
+                ${beforePhotos.map((_, i) => `<div style="color: #666; font-size: 13px;">• Before-Photo-${i + 1}-${booking.booking_id}.jpg</div>`).join('')}
+              </div>
+              <div>
+                <h4 style="color: #00aa44; margin: 0 0 8px 0; font-size: 14px;">✨ After (${afterPhotos.length})</h4>
+                ${afterPhotos.map((_, i) => `<div style="color: #666; font-size: 13px;">• After-Photo-${i + 1}-${booking.booking_id}.jpg</div>`).join('')}
+              </div>
+            </div>
+            <p style="color: #999; font-size: 14px; margin-top: 15px;">
               Click on the attachments to view or save your photos
             </p>
           </div>
@@ -1375,7 +1388,7 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       subject: `✨ Job Complete - Before & After Photos (${booking.booking_id})`,
       html: emailHtml,
       text: `Hi ${customer.name}, your window cleaning service is complete! Please see the attached before and after photos showing the fantastic results.`,
-      attachments: [beforePhotoData, afterPhotoData]
+      attachments: attachments
     });
 
     res.json({ success: true, message: 'Photos sent successfully' });
