@@ -19,6 +19,7 @@ export default function BookingForm() {
   const [bookingId, setBookingId] = useState('')
   const [showPayment, setShowPayment] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState(0)
+  const [paymentType, setPaymentType] = useState<'deposit' | 'full'>('deposit')
 
   // Calculate pricing based on service
   const getServicePrice = (service: string) => {
@@ -34,6 +35,17 @@ export default function BookingForm() {
     return prices[service] || 119
   }
 
+  // Calculate deposit amount (30% of full price, minimum $30)
+  const getDepositAmount = (fullPrice: number) => {
+    return Math.max(Math.round(fullPrice * 0.3), 30)
+  }
+
+  // Get payment amount based on selected payment type
+  const getPaymentAmount = () => {
+    const fullPrice = getServicePrice(formData.service)
+    return paymentType === 'deposit' ? getDepositAmount(fullPrice) : fullPrice
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -44,7 +56,7 @@ export default function BookingForm() {
       return
     }
 
-    const amount = getServicePrice(formData.service)
+    const amount = getPaymentAmount()
     setPaymentAmount(amount)
     setShowPayment(true)
   }
@@ -62,7 +74,9 @@ export default function BookingForm() {
         body: JSON.stringify({
           ...formData,
           paymentIntentId,
-          amountPaid: paymentAmount
+          amountPaid: paymentAmount,
+          paymentType: paymentType,
+          fullAmount: getServicePrice(formData.service)
         }),
       })
 
@@ -130,7 +144,14 @@ export default function BookingForm() {
               'Weekend Afternoon (12pm-5pm)'
             }</p>
             <p><strong>Address:</strong> {formData.address}</p>
-            <p><strong>Total:</strong> <span className="font-bold text-lg">${paymentAmount} AUD</span></p>
+            <p><strong>Payment:</strong> <span className="font-bold text-lg">${paymentAmount} AUD</span> 
+              {paymentType === 'deposit' ? ` (${Math.round((paymentAmount / getServicePrice(formData.service)) * 100)}% deposit)` : ' (full payment)'}
+            </p>
+            {paymentType === 'deposit' && (
+              <p className="text-xs text-blue-600 mt-1">
+                Remaining balance: ${getServicePrice(formData.service) - paymentAmount} AUD (paid on completion)
+              </p>
+            )}
           </div>
         </div>
         
@@ -270,6 +291,53 @@ export default function BookingForm() {
         />
       </div>
 
+      {/* Payment Option Selection */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Payment Option
+        </label>
+        <div className="space-y-3">
+          <div className="flex items-center">
+            <input
+              type="radio"
+              id="deposit"
+              name="paymentType"
+              value="deposit"
+              checked={paymentType === 'deposit'}
+              onChange={(e) => setPaymentType(e.target.value as 'deposit' | 'full')}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+            />
+            <label htmlFor="deposit" className="ml-3 flex-1">
+              <div className="text-sm font-medium text-gray-900">
+                Pay Deposit - ${getDepositAmount(getServicePrice(formData.service))} AUD
+              </div>
+              <div className="text-sm text-gray-600">
+                Secure your booking with {Math.round((getDepositAmount(getServicePrice(formData.service)) / getServicePrice(formData.service)) * 100)}% deposit. Pay remaining ${getServicePrice(formData.service) - getDepositAmount(getServicePrice(formData.service))} AUD on completion.
+              </div>
+            </label>
+          </div>
+          <div className="flex items-center">
+            <input
+              type="radio"
+              id="full"
+              name="paymentType"
+              value="full"
+              checked={paymentType === 'full'}
+              onChange={(e) => setPaymentType(e.target.value as 'deposit' | 'full')}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+            />
+            <label htmlFor="full" className="ml-3 flex-1">
+              <div className="text-sm font-medium text-gray-900">
+                Pay Full Amount - ${getServicePrice(formData.service)} AUD
+              </div>
+              <div className="text-sm text-gray-600">
+                Pay the complete amount now and you're all set!
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
       {/* Status Messages */}
       {submitStatus === 'success' && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -323,7 +391,7 @@ export default function BookingForm() {
               Submitting...
             </span>
           ) : (
-            `Continue to Payment - $${getServicePrice(formData.service)} AUD`
+            `Continue to Payment - $${getPaymentAmount()} AUD ${paymentType === 'deposit' ? '(Deposit)' : '(Full)'}`
           )}
         </span>
         <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

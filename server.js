@@ -18,6 +18,22 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 app.use(cors());
 app.use(express.json());
 
+// Service pricing map (single source of truth)
+const SERVICE_PRICES = {
+  'windows': 99,
+  'home': 119,
+  'office': 129,
+  'deep': 199,
+  'carpet': 89,
+  'oven': 79,
+  'endoflease': 249
+};
+
+// Calculate deposit amount (30% of full price, minimum $30)
+const calculateDepositAmount = (fullPrice) => {
+  return Math.max(Math.round(fullPrice * 0.3), 30);
+};
+
 // Import the email utility (we'll handle this differently for Node.js)
 async function sendEmail(message) {
   const authToken = process.env.REPL_IDENTITY
@@ -57,7 +73,7 @@ async function sendEmail(message) {
 // Booking endpoint
 app.post('/api/booking', async (req, res) => {
   try {
-    const { name, email, phone, address, service, date, slot, notes, paymentIntentId, amountPaid } = req.body;
+    const { name, email, phone, address, service, date, slot, notes, paymentIntentId, amountPaid, paymentType, fullAmount } = req.body;
 
     // Validate required fields
     if (!name || !email || !address || !service || !date) {
@@ -88,11 +104,25 @@ app.post('/api/booking', async (req, res) => {
         }
         
         // Server-side price verification (security critical)
-        const servicePrices = {
-          'windows': 99, 'home': 119, 'office': 129, 'deep': 199,
-          'carpet': 89, 'oven': 79, 'endoflease': 249
-        };
-        const expectedAmount = (servicePrices[service] || 119) * 100; // in cents
+        const fullPrice = SERVICE_PRICES[service] || 119;
+        const depositAmount = calculateDepositAmount(fullPrice);
+        
+        // Determine expected amount based on payment type
+        let expectedAmount;
+        if (paymentType === 'deposit') {
+          expectedAmount = depositAmount * 100; // in cents
+        } else if (paymentType === 'full') {
+          expectedAmount = fullPrice * 100; // in cents
+        } else {
+          // Fallback: check if amount matches either deposit or full amount
+          if (paymentIntent.amount === depositAmount * 100) {
+            expectedAmount = depositAmount * 100;
+          } else if (paymentIntent.amount === fullPrice * 100) {
+            expectedAmount = fullPrice * 100;
+          } else {
+            expectedAmount = fullPrice * 100; // default to full amount
+          }
+        }
         
         // Verify amount matches expected price
         if (paymentIntent.amount !== expectedAmount) {
@@ -126,6 +156,8 @@ app.post('/api/booking', async (req, res) => {
       bookingId: `TJ${Date.now()}`,
       paymentIntentId: verifiedPaymentId,
       amountPaid: verifiedAmount,
+      paymentType: paymentType || (verifiedAmount && verifiedAmount < (SERVICE_PRICES[service] || 119) ? 'deposit' : 'full'),
+      fullAmount: SERVICE_PRICES[service] || 119,
       paymentStatus,
       submittedAt: new Date().toLocaleString('en-AU', {
         timeZone: 'Australia/Sydney',
@@ -137,8 +169,8 @@ app.post('/api/booking', async (req, res) => {
       })
     };
 
-    // Service price mapping (you can adjust these)
-    const servicePrices = {
+    // Service price labels for display
+    const servicePriceLabels = {
       'windows': 'From $99',
       'home': 'From $119',
       'office': 'From $129',
@@ -159,7 +191,7 @@ app.post('/api/booking', async (req, res) => {
     };
 
     const serviceName = serviceNames[service] || service;
-    const servicePrice = servicePrices[service] || 'Price on quote';
+    const servicePrice = servicePriceLabels[service] || `From $${SERVICE_PRICES[service] || 119}`;
 
     // Send confirmation email to customer
     const customerEmailHtml = `
@@ -193,12 +225,22 @@ app.post('/api/booking', async (req, res) => {
             ${paymentStatus === 'paid' ? `
             <div style="background: #ecfdf5; border: 1px solid #10b981; padding: 10px; border-radius: 6px; margin-top: 10px;">
               <p style="margin: 0; color: #065f46;"><strong>✅ Payment Confirmed</strong></p>
-              <p style="margin: 5px 0 0 0; color: #065f46; font-size: 14px;">Amount: $${verifiedAmount} AUD</p>
+              <p style="margin: 5px 0 0 0; color: #065f46; font-size: 14px;">
+                ${bookingDetails.paymentType === 'deposit' ? 
+                  `Deposit: $${verifiedAmount} AUD (Remaining: $${bookingDetails.fullAmount - verifiedAmount} AUD on completion)` :
+                  `Full Payment: $${verifiedAmount} AUD`
+                }
+              </p>
             </div>
             ` : paymentStatus === 'processing' ? `
             <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 10px; border-radius: 6px; margin-top: 10px;">
               <p style="margin: 0; color: #92400e;"><strong>⏳ Payment Processing</strong></p>
-              <p style="margin: 5px 0 0 0; color: #92400e; font-size: 14px;">Amount: $${verifiedAmount} AUD - You'll receive confirmation once payment completes</p>
+              <p style="margin: 5px 0 0 0; color: #92400e; font-size: 14px;">
+                ${bookingDetails.paymentType === 'deposit' ? 
+                  `Deposit: $${verifiedAmount} AUD - You'll receive confirmation once payment completes` :
+                  `Full Payment: $${verifiedAmount} AUD - You'll receive confirmation once payment completes`
+                }
+              </p>
             </div>
             ` : ''}
           </div>
@@ -241,10 +283,17 @@ BOOKING DETAILS:
 ${notes !== 'None' ? `- Special Notes: ${notes}` : ''}
 ${paymentStatus === 'paid' ? `
 ✅ PAYMENT CONFIRMED
-- Amount Paid: $${verifiedAmount} AUD
+${bookingDetails.paymentType === 'deposit' ? 
+  `- Deposit Paid: $${verifiedAmount} AUD
+- Remaining Balance: $${bookingDetails.fullAmount - verifiedAmount} AUD (due on completion)` :
+  `- Full Payment: $${verifiedAmount} AUD`
+}
 - Payment ID: ${verifiedPaymentId}` : paymentStatus === 'processing' ? `
 ⏳ PAYMENT PROCESSING
-- Amount: $${verifiedAmount} AUD
+${bookingDetails.paymentType === 'deposit' ? 
+  `- Deposit: $${verifiedAmount} AUD` :
+  `- Full Payment: $${verifiedAmount} AUD`
+}
 - Payment ID: ${verifiedPaymentId}
 - Status: Payment is being processed, you'll receive confirmation once complete` : ''}
 
@@ -289,14 +338,22 @@ Have questions? Please reply to this email.
         ${paymentStatus === 'paid' ? `
         <div style="background: #ecfdf5; border: 1px solid #10b981; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #065f46; margin-top: 0;">💳 Payment Received</h3>
+          <p><strong>Type:</strong> ${bookingDetails.paymentType === 'deposit' ? 'Deposit Payment' : 'Full Payment'}</p>
           <p><strong>Amount:</strong> $${verifiedAmount} AUD</p>
+          ${bookingDetails.paymentType === 'deposit' ? 
+            `<p><strong>Remaining:</strong> $${bookingDetails.fullAmount - verifiedAmount} AUD (due on completion)</p>` : ''
+          }
           <p><strong>Payment ID:</strong> ${verifiedPaymentId}</p>
           <p><strong>Status:</strong> Confirmed</p>
         </div>
         ` : paymentStatus === 'processing' ? `
         <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #92400e; margin-top: 0;">⏳ Payment Processing</h3>
+          <p><strong>Type:</strong> ${bookingDetails.paymentType === 'deposit' ? 'Deposit Payment' : 'Full Payment'}</p>
           <p><strong>Amount:</strong> $${verifiedAmount} AUD</p>
+          ${bookingDetails.paymentType === 'deposit' ? 
+            `<p><strong>Remaining:</strong> $${bookingDetails.fullAmount - verifiedAmount} AUD (due on completion)</p>` : ''
+          }
           <p><strong>Payment ID:</strong> ${verifiedPaymentId}</p>
           <p><strong>Status:</strong> Being processed - confirmation pending</p>
         </div>
@@ -332,11 +389,19 @@ SERVICE DETAILS:
 ${notes !== 'None' ? `- Special Notes: ${notes}` : ''}
 ${paymentStatus === 'paid' ? `
 💳 PAYMENT RECEIVED
+- Type: ${bookingDetails.paymentType === 'deposit' ? 'Deposit Payment' : 'Full Payment'}
 - Amount: $${verifiedAmount} AUD
+${bookingDetails.paymentType === 'deposit' ? 
+  `- Remaining: $${bookingDetails.fullAmount - verifiedAmount} AUD (due on completion)` : ''
+}
 - Payment ID: ${verifiedPaymentId}
 - Status: Confirmed` : paymentStatus === 'processing' ? `
 ⏳ PAYMENT PROCESSING
+- Type: ${bookingDetails.paymentType === 'deposit' ? 'Deposit Payment' : 'Full Payment'}
 - Amount: $${verifiedAmount} AUD
+${bookingDetails.paymentType === 'deposit' ? 
+  `- Remaining: $${bookingDetails.fullAmount - verifiedAmount} AUD (due on completion)` : ''
+}
 - Payment ID: ${verifiedPaymentId}
 - Status: Being processed - you'll receive updates once complete` : ''}
 
@@ -399,7 +464,7 @@ app.post('/api/create-payment-intent', async (req, res) => {
       'endoflease': 249
     };
     
-    const serverAmount = servicePrices[bookingData?.service] || 119;
+    const serverAmount = SERVICE_PRICES[bookingData?.service] || 119;
 
     // Create payment intent with Afterpay support
     const paymentIntent = await stripe.paymentIntents.create({
