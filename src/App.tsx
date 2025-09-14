@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React from 'react'
 import BookingForm from './components/BookingForm'
 import HeroDog from './components/HeroDog'
 
@@ -60,7 +60,7 @@ function App() {
               </span>
             </h1>
             
-            <style jsx>{`
+            <style>{`
               @keyframes typewriter {
                 0% { width: 0; }
                 50% { width: 100%; }

@@ -50,7 +50,7 @@ export default function HeroDog() {
             ></div>
           </div>
           
-          <style jsx>{`
+          <style>{`
             @keyframes float {
               0%, 100% { transform: translateY(0px) scale(1); }
               50% { transform: translateY(-10px) scale(1.05); }
@@ -73,7 +73,7 @@ export default function HeroDog() {
           <div className="absolute bottom-0 left-4 transform translate-y-1/2 w-3 h-3 bg-white border-r border-b border-black/10 rotate-45"></div>
         </div>
         
-        <style jsx>{`
+        <style>{`
           @keyframes typewriter {
             0% { width: 0; }
             50% { width: 100%; }
