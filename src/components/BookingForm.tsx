@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PaymentForm from './PaymentForm'
 
 export default function BookingForm() {
   const [formData, setFormData] = useState({
@@ -16,9 +17,39 @@ export default function BookingForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [submitMessage, setSubmitMessage] = useState('')
   const [bookingId, setBookingId] = useState('')
+  const [showPayment, setShowPayment] = useState(false)
+  const [paymentAmount, setPaymentAmount] = useState(0)
+
+  // Calculate pricing based on service
+  const getServicePrice = (service: string) => {
+    const prices: { [key: string]: number } = {
+      'windows': 99,
+      'home': 119,
+      'office': 129,
+      'deep': 199,
+      'carpet': 89,
+      'oven': 79,
+      'endoflease': 249
+    }
+    return prices[service] || 119
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate form and proceed to payment
+    if (!formData.name || !formData.email || !formData.address || !formData.date) {
+      setSubmitStatus('error')
+      setSubmitMessage('Please fill in all required fields.')
+      return
+    }
+
+    const amount = getServicePrice(formData.service)
+    setPaymentAmount(amount)
+    setShowPayment(true)
+  }
+
+  const handlePaymentSuccess = async (paymentIntentId: string) => {
     setIsSubmitting(true)
     setSubmitStatus('idle')
 
@@ -28,15 +59,20 @@ export default function BookingForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          paymentIntentId,
+          amountPaid: paymentAmount
+        }),
       })
 
       const result = await response.json()
 
       if (response.ok) {
         setSubmitStatus('success')
-        setSubmitMessage('Booking submitted successfully! Check your email for confirmation.')
+        setSubmitMessage('Booking confirmed and payment processed! Check your email for confirmation.')
         setBookingId(result.bookingId)
+        setShowPayment(false)
         
         // Reset form after successful submission
         setFormData({
@@ -50,14 +86,26 @@ export default function BookingForm() {
           notes: ''
         })
       } else {
-        throw new Error(result.error || 'Failed to submit booking')
+        throw new Error(result.error || 'Failed to confirm booking')
       }
     } catch (error) {
       setSubmitStatus('error')
-      setSubmitMessage(error instanceof Error ? error.message : 'Something went wrong. Please try again.')
+      setSubmitMessage(error instanceof Error ? error.message : 'Something went wrong after payment. Please contact us.')
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handlePaymentError = (error: string) => {
+    setSubmitStatus('error')
+    setSubmitMessage(`Payment failed: ${error}`)
+    setIsSubmitting(false)
+  }
+
+  const handleBackToForm = () => {
+    setShowPayment(false)
+    setSubmitStatus('idle')
+    setSubmitMessage('')
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -65,6 +113,43 @@ export default function BookingForm() {
       ...formData,
       [e.target.name]: e.target.value
     })
+  }
+
+  // Show payment form if user proceeds to payment
+  if (showPayment) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-semibold text-blue-900 mb-2">Booking Summary</h3>
+          <div className="text-sm text-blue-800 space-y-1">
+            <p><strong>Service:</strong> {formData.service.charAt(0).toUpperCase() + formData.service.slice(1)} Cleaning</p>
+            <p><strong>Date:</strong> {formData.date}</p>
+            <p><strong>Time:</strong> {
+              formData.slot === 'weekday_afternoon' ? 'Weekday Afternoon (3pm-6pm)' :
+              formData.slot === 'weekend_morning' ? 'Weekend Morning (8am-12pm)' :
+              'Weekend Afternoon (12pm-5pm)'
+            }</p>
+            <p><strong>Address:</strong> {formData.address}</p>
+            <p><strong>Total:</strong> <span className="font-bold text-lg">${paymentAmount} AUD</span></p>
+          </div>
+        </div>
+        
+        <PaymentForm
+          amount={paymentAmount}
+          bookingData={formData}
+          onPaymentSuccess={handlePaymentSuccess}
+          onPaymentError={handlePaymentError}
+        />
+        
+        <button
+          type="button"
+          onClick={handleBackToForm}
+          className="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+        >
+          ← Back to Booking Details
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -257,7 +342,7 @@ export default function BookingForm() {
             Submitting...
           </span>
         ) : (
-          'Book Now - Get Instant Quote'
+          `Continue to Payment - $${getServicePrice(formData.service)} AUD`
         )}
       </button>
     </form>

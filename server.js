@@ -1,9 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const Stripe = require('stripe');
 
 const app = express();
 const PORT = 3001; // Use a different port from frontend
+
+// Initialize Stripe with secret key
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error('Warning: STRIPE_SECRET_KEY not found. Payment processing will not work.');
+}
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16',
+}) : null;
 
 // Middleware
 app.use(cors());
@@ -48,11 +57,53 @@ async function sendEmail(message) {
 // Booking endpoint
 app.post('/api/booking', async (req, res) => {
   try {
-    const { name, email, phone, address, service, date, slot, notes } = req.body;
+    const { name, email, phone, address, service, date, slot, notes, paymentIntentId, amountPaid } = req.body;
 
     // Validate required fields
     if (!name || !email || !address || !service || !date) {
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Verify payment if provided
+    let paymentStatus = 'pending';
+    let verifiedAmount = null;
+    let verifiedPaymentId = null;
+    
+    if (paymentIntentId && stripe) {
+      try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        
+        // Verify payment status
+        if (paymentIntent.status !== 'succeeded') {
+          return res.status(400).json({ error: 'Payment not completed' });
+        }
+        
+        // Server-side price verification (security critical)
+        const servicePrices = {
+          'windows': 99, 'home': 119, 'office': 129, 'deep': 199,
+          'carpet': 89, 'oven': 79, 'endoflease': 249
+        };
+        const expectedAmount = (servicePrices[service] || 119) * 100; // in cents
+        
+        // Verify amount matches expected price
+        if (paymentIntent.amount !== expectedAmount) {
+          console.error(`Payment amount mismatch: expected ${expectedAmount}, got ${paymentIntent.amount}`);
+          return res.status(400).json({ error: 'Payment amount verification failed' });
+        }
+        
+        // Verify currency
+        if (paymentIntent.currency !== 'aud') {
+          return res.status(400).json({ error: 'Invalid payment currency' });
+        }
+        
+        paymentStatus = 'paid';
+        verifiedAmount = paymentIntent.amount / 100; // Convert back to dollars
+        verifiedPaymentId = paymentIntent.id;
+        
+      } catch (paymentError) {
+        console.error('Payment verification error:', paymentError);
+        return res.status(400).json({ error: 'Payment verification failed' });
+      }
     }
 
     // Create booking details
@@ -66,6 +117,9 @@ app.post('/api/booking', async (req, res) => {
       slot,
       notes: notes || 'None',
       bookingId: `TJ${Date.now()}`,
+      paymentIntentId: verifiedPaymentId,
+      amountPaid: verifiedAmount,
+      paymentStatus,
       submittedAt: new Date().toLocaleString('en-AU', {
         timeZone: 'Australia/Sydney',
         year: 'numeric',
@@ -129,6 +183,12 @@ app.post('/api/booking', async (req, res) => {
             }</p>
             <p><strong>Address:</strong> ${address}</p>
             ${notes !== 'None' ? `<p><strong>Special Notes:</strong> ${notes}</p>` : ''}
+            ${paymentStatus === 'paid' ? `
+            <div style="background: #ecfdf5; border: 1px solid #10b981; padding: 10px; border-radius: 6px; margin-top: 10px;">
+              <p style="margin: 0; color: #065f46;"><strong>✅ Payment Confirmed</strong></p>
+              <p style="margin: 5px 0 0 0; color: #065f46; font-size: 14px;">Amount: $${verifiedAmount} AUD</p>
+            </div>
+            ` : ''}
           </div>
           
           <div style="background: #f0f9ff; border: 1px solid #0ea5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
@@ -167,6 +227,10 @@ BOOKING DETAILS:
 }
 - Address: ${address}
 ${notes !== 'None' ? `- Special Notes: ${notes}` : ''}
+${paymentStatus === 'paid' ? `
+✅ PAYMENT CONFIRMED
+- Amount Paid: $${verifiedAmount} AUD
+- Payment ID: ${verifiedPaymentId}` : ''}
 
 NEXT STEPS:
 Our team will review your booking request and contact you within 24 hours to confirm availability and provide a detailed quote.
@@ -197,9 +261,23 @@ Have questions? Please reply to this email.
           <p><strong>Service:</strong> ${serviceName}</p>
           <p><strong>Estimated Price:</strong> ${servicePrice}</p>
           <p><strong>Preferred Date:</strong> ${date}</p>
-          <p><strong>Time Slot:</strong> ${slot === 'morning' ? 'Morning (8am-12pm)' : 'Afternoon (12pm-5pm)'}</p>
+          <p><strong>Time Slot:</strong> ${
+            slot === 'weekday_afternoon' ? 'Weekday Afternoon (3pm-6pm)' :
+            slot === 'weekend_morning' ? 'Weekend Morning (8am-12pm)' :
+            slot === 'weekend_afternoon' ? 'Weekend Afternoon (12pm-5pm)' :
+            slot
+          }</p>
           ${notes !== 'None' ? `<p><strong>Special Notes:</strong> ${notes}</p>` : ''}
         </div>
+        
+        ${paymentStatus === 'paid' ? `
+        <div style="background: #ecfdf5; border: 1px solid #10b981; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="color: #065f46; margin-top: 0;">💳 Payment Received</h3>
+          <p><strong>Amount:</strong> $${verifiedAmount} AUD</p>
+          <p><strong>Payment ID:</strong> ${verifiedPaymentId}</p>
+          <p><strong>Status:</strong> Confirmed</p>
+        </div>
+        ` : ''}
         
         <p style="color: #666; font-size: 14px;">
           <strong>Submitted:</strong> ${bookingDetails.submittedAt}<br>
@@ -229,6 +307,11 @@ SERVICE DETAILS:
   slot
 }
 ${notes !== 'None' ? `- Special Notes: ${notes}` : ''}
+${paymentStatus === 'paid' ? `
+💳 PAYMENT RECEIVED
+- Amount: $${verifiedAmount} AUD
+- Payment ID: ${verifiedPaymentId}
+- Status: Confirmed` : ''}
 
 Submitted: ${bookingDetails.submittedAt}
 Please contact the customer within 24 hours to confirm availability.
@@ -264,6 +347,57 @@ Please contact the customer within 24 hours to confirm availability.
     console.error('Booking error:', error);
     res.status(500).json({ 
       error: 'Failed to process booking',
+      details: error.message 
+    });
+  }
+});
+
+// Stripe payment intent endpoint
+app.post('/api/create-payment-intent', async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(500).json({ error: 'Stripe not configured' });
+    }
+
+    const { bookingData } = req.body;
+
+    // Server-side price calculation (NEVER trust client amounts)
+    const servicePrices = {
+      'windows': 99,
+      'home': 119,
+      'office': 129,
+      'deep': 199,
+      'carpet': 89,
+      'oven': 79,
+      'endoflease': 249
+    };
+    
+    const serverAmount = servicePrices[bookingData?.service] || 119;
+
+    // Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(serverAmount * 100), // Convert to cents
+      currency: 'aud', // Australian dollars
+      metadata: {
+        bookingType: bookingData?.service || 'cleaning_service',
+        customerEmail: bookingData?.email || '',
+        customerName: bookingData?.name || '',
+        address: bookingData?.address || '',
+        timeSlot: bookingData?.slot || '',
+        date: bookingData?.date || ''
+      },
+      description: `TidyJack ${bookingData?.service || 'Cleaning'} Service`
+    });
+
+    res.json({ 
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id
+    });
+
+  } catch (error) {
+    console.error('Payment intent creation error:', error);
+    res.status(500).json({ 
+      error: 'Failed to create payment intent',
       details: error.message 
     });
   }
