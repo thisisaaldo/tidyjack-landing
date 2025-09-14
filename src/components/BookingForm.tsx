@@ -287,7 +287,7 @@ export default function BookingForm() {
             onPlaceSelect={(place) => {
               console.log('Selected place:', place)
             }}
-            placeholder="Start typing your address..."
+            placeholder="e.g. 123 Collins Street, Melbourne VIC 3000, Australia"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             apiKey={googleMapsApiKey}
             required
@@ -300,7 +300,7 @@ export default function BookingForm() {
             value={formData.address}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="123 Main St, Sydney NSW 2000"
+            placeholder="e.g. 123 Collins Street, Melbourne VIC 3000, Australia"
             required
           />
         )}

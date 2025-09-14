@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface GooglePlacesAutocompleteProps {
   value: string
@@ -14,19 +14,19 @@ export default function GooglePlacesAutocomplete({
   value,
   onChange,
   onPlaceSelect,
-  placeholder = "Enter your address",
+  placeholder = "e.g. 123 Collins Street, Melbourne VIC 3000, Australia",
   className = "",
   required = false,
   apiKey
 }: GooglePlacesAutocompleteProps) {
-  const autocompleteRef = useRef<HTMLElement | null>(null)
+  const autocompleteRef = useRef<HTMLInputElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     // Load Google Maps script
     const loadGoogleMaps = () => {
-      if (window.google?.maps?.importLibrary) {
+      if (typeof window !== 'undefined' && window.google?.maps?.importLibrary) {
         setIsLoaded(true)
         return
       }
@@ -56,7 +56,8 @@ export default function GooglePlacesAutocomplete({
     const initAutocomplete = async () => {
       try {
         // Use the new Places API
-        const { PlaceAutocompleteElement } = await google.maps.importLibrary("places") as google.maps.PlacesLibrary
+        const placesLibrary = await google.maps.importLibrary("places") as any
+        const { PlaceAutocompleteElement } = placesLibrary
         
         const autocompleteElement = new PlaceAutocompleteElement({
           componentRestrictions: { country: 'AU' },
