@@ -615,7 +615,7 @@ app.post('/api/create-payment-intent', strictRateLimit, async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(serverAmount * 100), // Convert to cents
       currency: 'aud', // Australian dollars
-      payment_method_types: ['card', 'afterpay_clearpay'], // Enable Afterpay
+      payment_method_types: ['card'], // Temporarily restrict to card only for testing // Enable Afterpay
       metadata: {
         bookingType: bookingData?.service || 'cleaning_service',
         paymentType: paymentType || 'full',
@@ -682,6 +682,11 @@ app.post('/api/webhook', async (req, res) => {
       case 'payment_intent.payment_failed':
         const failedPayment = event.data.object;
         console.log(`❌ Payment failed: ${failedPayment.id}`);
+        if (failedPayment.last_payment_error) {
+          console.log(`❌ Failure reason: ${failedPayment.last_payment_error.code} - ${failedPayment.last_payment_error.message}`);
+          console.log(`❌ Failure type: ${failedPayment.last_payment_error.type}`);
+        }
+        console.log(`❌ Payment status: ${failedPayment.status}`);
         
         // Optionally send failure notification
         if (failedPayment.metadata.customerEmail) {
