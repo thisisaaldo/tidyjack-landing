@@ -16,6 +16,10 @@ A professional window cleaning service landing page built with React, Vite, Type
 - **Multi-step booking flow: form → secure payment → email confirmations**
 - **Owner availability scheduling (after 3pm weekdays, all day weekends)**
 - **Professional email notifications to business and customers**
+- **Complete before/after photo capture system with admin dashboard**
+- **Direct camera access for taking photos from admin interface**
+- **Automatic customer email delivery when both photos are captured**
+- **Integrated object storage system for professional photo handling**
 - Interactive booking form with service selection
 - Animated hero section with mascot character
 - Service pricing information ($79-$249 range)
