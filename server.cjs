@@ -1286,36 +1286,58 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
     const attachments = [];
     
     try {
-      // Process before photos
-      for (let i = 0; i < beforePhotos.length; i++) {
-        const photo = beforePhotos[i];
+      let beforeCount = 0;
+      // Process before photos - skip missing files
+      for (const photo of beforePhotos) {
         const photoPath = path.join(__dirname, 'uploads', photo.file_path.substring(1)); // Remove leading slash
-        const photoBuffer = await fs.readFile(photoPath);
         
-        attachments.push({
-          filename: `Before-Photo-${i + 1}-${booking.booking_id}.jpg`,
-          content: photoBuffer.toString('base64'),
-          contentType: 'image/jpeg',
-          encoding: 'base64'
-        });
+        try {
+          // Check if file exists before trying to read
+          await fs.access(photoPath);
+          const photoBuffer = await fs.readFile(photoPath);
+          
+          attachments.push({
+            filename: `Before-Photo-${++beforeCount}-${booking.booking_id}.jpg`,
+            content: photoBuffer.toString('base64'),
+            contentType: 'image/jpeg',
+            encoding: 'base64'
+          });
+        } catch (fileError) {
+          console.log(`Skipping missing before photo file: ${photoPath}`);
+          // Continue with next photo instead of failing
+        }
       }
       
-      // Process after photos
-      for (let i = 0; i < afterPhotos.length; i++) {
-        const photo = afterPhotos[i];
+      let afterCount = 0;
+      // Process after photos - skip missing files  
+      for (const photo of afterPhotos) {
         const photoPath = path.join(__dirname, 'uploads', photo.file_path.substring(1)); // Remove leading slash
-        const photoBuffer = await fs.readFile(photoPath);
         
-        attachments.push({
-          filename: `After-Photo-${i + 1}-${booking.booking_id}.jpg`,
-          content: photoBuffer.toString('base64'),
-          contentType: 'image/jpeg',
-          encoding: 'base64'
-        });
+        try {
+          // Check if file exists before trying to read
+          await fs.access(photoPath);
+          const photoBuffer = await fs.readFile(photoPath);
+          
+          attachments.push({
+            filename: `After-Photo-${++afterCount}-${booking.booking_id}.jpg`,
+            content: photoBuffer.toString('base64'),
+            contentType: 'image/jpeg',
+            encoding: 'base64'
+          });
+        } catch (fileError) {
+          console.log(`Skipping missing after photo file: ${photoPath}`);
+          // Continue with next photo instead of failing
+        }
       }
-    } catch (fileError) {
-      console.error('Error reading photo files for attachment:', fileError);
-      return res.status(500).json({ error: 'Could not read photo files for email' });
+      
+      // Check if we have any valid attachments after filtering
+      if (attachments.length === 0) {
+        return res.status(400).json({ error: 'No photo files found on disk for this booking' });
+      }
+      
+    } catch (generalError) {
+      console.error('General error processing photos for attachment:', generalError);
+      return res.status(500).json({ error: 'Failed to process photo files for email' });
     }
 
     // Send email using Replit Mail
