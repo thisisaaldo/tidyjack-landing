@@ -1,7 +1,7 @@
-# TidyJack Landing Page
+# TidyJacks Landing Page
 
 ## Overview
-A professional window cleaning service landing page built with React, Vite, TypeScript, and Tailwind CSS. This is a responsive website for an Australian window cleaning business called TidyJack that allows users to book window cleaning services online.
+A professional window cleaning service landing page built with React, Vite, TypeScript, and Tailwind CSS. This is a responsive website for an Australian window cleaning business called TidyJacks that allows users to book window cleaning services online.
 
 ## Project Architecture
 - **Frontend Framework**: React 18 with TypeScript
@@ -36,6 +36,7 @@ A professional window cleaning service landing page built with React, Vite, Type
 - Production port: 5000
 
 ## Recent Changes
+- 2025-09-14: **Live at www.tidyjacks.com** - Custom domain deployment completed with 🐾 paw emoji branding and name change from TidyJack to TidyJacks throughout entire application
 - 2024-09-14: **Complete Pricing Structure Overhaul** - New residential pricing ($150-$360) and retail storefront pricing ($25-$60) with exterior-only options at 60% of full pricing
 - **Smart Deposit Logic** - Deposit option (30% min $30) automatically hidden for low-cost services to prevent negative balances, with auto-switching to full payment
 - **Enhanced Service Selection** - Organized dropdown with residential (inside & out), residential (exterior only), and retail categories
