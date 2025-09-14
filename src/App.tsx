@@ -100,25 +100,25 @@ function App() {
           <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Window Cleaning Pricing</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 reveal-children">
             <div className="card p-6">
-              <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Residential</div>
-              <div className="font-semibold text-lg">Up to 20 Windows</div>
-              <div className="text-2xl font-bold text-blue-600 mt-2">$99</div>
+              <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Small Residential</div>
+              <div className="font-semibold text-lg">Apartment/Small Home</div>
+              <div className="text-2xl font-bold text-blue-600 mt-2">$150-$200</div>
               <p className="text-sm text-black/70 mt-2">Inside & outside cleaning, frames & sills included</p>
             </div>
             <div className="card p-6">
-              <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Large Home</div>
-              <div className="font-semibold text-lg">21–40 Windows</div>
-              <div className="text-2xl font-bold text-blue-600 mt-2">$179</div>
+              <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Large Residential</div>
+              <div className="font-semibold text-lg">Large/Two-Storey Homes</div>
+              <div className="text-2xl font-bold text-blue-600 mt-2">$270-$360</div>
               <p className="text-sm text-black/70 mt-2">Complete home window cleaning service</p>
             </div>
             <div className="card p-6">
               <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Commercial</div>
-              <div className="font-semibold text-lg">Custom Quote</div>
-              <div className="text-2xl font-bold text-blue-600 mt-2">$299+</div>
-              <p className="text-sm text-black/70 mt-2">Office buildings, storefronts & large properties</p>
+              <div className="font-semibold text-lg">Retail Storefronts</div>
+              <div className="text-2xl font-bold text-blue-600 mt-2">From $25</div>
+              <p className="text-sm text-black/70 mt-2">Small shopfronts, full service & deep cleaning available</p>
             </div>
           </div>
-          <p className="text-sm text-black/60 mt-4 text-center">All prices include inside & outside cleaning, frames, and sills. Final price confirmed after property assessment.</p>
+          <p className="text-sm text-black/60 mt-4 text-center">Exterior-only options available at 60% of full pricing. Select your property type in the booking form for exact pricing.</p>
         </section>
 
         {/* Areas */}
