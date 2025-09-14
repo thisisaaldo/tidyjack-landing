@@ -18,6 +18,8 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 const allowedOrigins = [
   'http://localhost:5000',
   'https://1418cf15-1ec1-4817-a08e-7b0f3ecf5cb6-00-2dhmm2uavx57i.kirk.replit.dev',
+  'https://www.tidyjacks.com',
+  'https://tidyjacks.com',
   // Add your production domain here when deploying
   process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null
 ].filter(Boolean);

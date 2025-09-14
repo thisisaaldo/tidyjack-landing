@@ -104,7 +104,7 @@ export default function PaymentForm({ amount, bookingData, onPaymentSuccess, onP
     // Create payment intent
     const createPaymentIntent = async () => {
       try {
-        const response = await fetch('/api/create-payment-intent', {
+        const response = await fetch('https://1418cf15-1ec1-4817-a08e-7b0f3ecf5cb6-00-2dhmm2uavx57i.kirk.replit.dev:3001/api/create-payment-intent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

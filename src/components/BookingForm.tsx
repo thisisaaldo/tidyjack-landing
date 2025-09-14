@@ -119,7 +119,7 @@ export default function BookingForm() {
     setSubmitStatus('idle')
 
     try {
-      const response = await fetch('/api/booking', {
+      const response = await fetch('https://1418cf15-1ec1-4817-a08e-7b0f3ecf5cb6-00-2dhmm2uavx57i.kirk.replit.dev:3001/api/booking', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
