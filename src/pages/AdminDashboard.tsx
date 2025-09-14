@@ -53,9 +53,9 @@ const AdminDashboard = () => {
   // Photo management state
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [photoUploadState, setPhotoUploadState] = useState<{
-    before: boolean;
-    after: boolean;
-  }>({ before: false, after: false });
+    before: number[];
+    after: number[];
+  }>({ before: [], after: [] });
   const [photoMessage, setPhotoMessage] = useState('');
 
   // Authentication
@@ -163,7 +163,10 @@ const AdminDashboard = () => {
         })
       });
 
-      setPhotoUploadState(prev => ({ ...prev, [photoType]: true }));
+      setPhotoUploadState(prev => ({ 
+        ...prev, 
+        [photoType]: [...prev[photoType], Date.now()]
+      }));
       setPhotoMessage(`${photoType.charAt(0).toUpperCase() + photoType.slice(1)} photo uploaded successfully!`);
 
       // Don't automatically send email - let user control when to send
@@ -189,7 +192,7 @@ const AdminDashboard = () => {
       // Reset photo state after successful send
       setTimeout(() => {
         setSelectedBooking(null);
-        setPhotoUploadState({ before: false, after: false });
+        setPhotoUploadState({ before: [], after: [] });
         setPhotoMessage('');
       }, 3000);
     } catch (error) {
@@ -550,7 +553,7 @@ const AdminDashboard = () => {
                                 <button
                                   onClick={() => {
                                     setSelectedBooking(booking);
-                                    setPhotoUploadState({ before: false, after: false });
+                                    setPhotoUploadState({ before: [], after: [] });
                                     setPhotoMessage('');
                                   }}
                                   className="min-h-[48px] px-6 py-3 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 transition-colors w-full sm:w-auto flex items-center justify-center"
@@ -596,17 +599,17 @@ const AdminDashboard = () => {
                         <PhotoCapture
                           photoType="before"
                           onPhotoCaptured={(blob) => uploadPhoto(blob, selectedBooking.id, 'before')}
-                          disabled={photoUploadState.before}
+                          disabled={false}
                         />
                         
                         <PhotoCapture
                           photoType="after"
                           onPhotoCaptured={(blob) => uploadPhoto(blob, selectedBooking.id, 'after')}
-                          disabled={photoUploadState.after}
+                          disabled={false}
                         />
                       </div>
 
-                      {photoUploadState.before && photoUploadState.after && (
+                      {photoUploadState.before.length > 0 && photoUploadState.after.length > 0 && (
                         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
                           <h4 className="text-blue-800 font-medium mb-3">🎉 Both photos captured!</h4>
                           <p className="text-blue-700 text-sm mb-4">
