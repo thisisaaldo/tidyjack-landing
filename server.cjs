@@ -1293,7 +1293,8 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       beforePhotoData = {
         filename: `Before-Photo-${booking.booking_id}.jpg`,
         content: beforeBuffer.toString('base64'),
-        contentType: 'image/jpeg'
+        contentType: 'image/jpeg',
+        encoding: 'base64'
       };
       
       // Read after photo  
@@ -1302,7 +1303,8 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       afterPhotoData = {
         filename: `After-Photo-${booking.booking_id}.jpg`,
         content: afterBuffer.toString('base64'),
-        contentType: 'image/jpeg'
+        contentType: 'image/jpeg',
+        encoding: 'base64'
       };
     } catch (fileError) {
       console.error('Error reading photo files for attachment:', fileError);
