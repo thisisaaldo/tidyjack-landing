@@ -98,27 +98,83 @@ function App() {
         {/* Pricing */}
         <section id="pricing" className="py-10 border-t border-black/10 reveal">
           <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Window Cleaning Pricing</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 reveal-children">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 reveal-children">
+            
+            {/* Residential Homes (Inside & Out) */}
             <div className="card p-6">
-              <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Small Residential</div>
-              <div className="font-semibold text-lg">Apartment/Small Home</div>
-              <div className="text-2xl font-bold text-blue-600 mt-2">$150-$200</div>
-              <p className="text-sm text-black/70 mt-2">Inside & outside cleaning, frames & sills included</p>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Residential Homes (Inside & Out)</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Apartment/Flat</span>
+                  <span className="font-semibold text-blue-600">$150</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Small Single-Storey (2-3 bed)</span>
+                  <span className="font-semibold text-blue-600">$200</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Large Single-Storey (4+ bed)</span>
+                  <span className="font-semibold text-blue-600">$270</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Two-Storey (3 bed)</span>
+                  <span className="font-semibold text-blue-600">$320</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Two-Storey (4+ bed)</span>
+                  <span className="font-semibold text-blue-600">$360</span>
+                </div>
+              </div>
             </div>
+
+            {/* Residential Homes (Exterior Only) */}
             <div className="card p-6">
-              <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Large Residential</div>
-              <div className="font-semibold text-lg">Large/Two-Storey Homes</div>
-              <div className="text-2xl font-bold text-blue-600 mt-2">$270-$360</div>
-              <p className="text-sm text-black/70 mt-2">Complete home window cleaning service</p>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Residential Homes (Exterior Only)</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Apartment/Flat Exterior</span>
+                  <span className="font-semibold text-blue-600">$90</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Small Home Exterior</span>
+                  <span className="font-semibold text-blue-600">$120</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Large Home Exterior</span>
+                  <span className="font-semibold text-blue-600">$162</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Two-Storey Exterior (3 bed)</span>
+                  <span className="font-semibold text-blue-600">$192</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Two-Storey Exterior (4+ bed)</span>
+                  <span className="font-semibold text-blue-600">$216</span>
+                </div>
+              </div>
             </div>
+
+            {/* Retail Storefronts */}
             <div className="card p-6">
-              <div className="text-xs uppercase tracking-wide text-black/55 mb-2">Commercial</div>
-              <div className="font-semibold text-lg">Retail Storefronts</div>
-              <div className="text-2xl font-bold text-blue-600 mt-2">From $25</div>
-              <p className="text-sm text-black/70 mt-2">Small shopfronts, full service & deep cleaning available</p>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Retail Storefronts</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Small Shopfront (Outside Only)</span>
+                  <span className="font-semibold text-blue-600">From $25</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Shopfront (Inside & Outside)</span>
+                  <span className="font-semibold text-blue-600">From $35</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">One-off Deep Clean</span>
+                  <span className="font-semibold text-blue-600">From $60</span>
+                </div>
+              </div>
             </div>
+
           </div>
-          <p className="text-sm text-black/60 mt-4 text-center">Exterior-only options available at 60% of full pricing. Select your property type in the booking form for exact pricing.</p>
+          <p className="text-sm text-black/60 mt-4 text-center">All residential prices include inside & outside cleaning, frames, and sills. Exterior-only services are 60% of full pricing.</p>
         </section>
 
         {/* Areas */}
