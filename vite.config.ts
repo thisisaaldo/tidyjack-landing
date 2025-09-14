@@ -18,6 +18,14 @@ export default defineConfig({
       protocol: 'wss'
     },
     cors: true,
-    strictPort: false
+    strictPort: false,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      }
+    }
   }
 })

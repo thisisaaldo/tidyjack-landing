@@ -8,9 +8,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "serve": "^14.2.5"
+    "serve": "^14.2.5",
+    "zod": "^4.1.8"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
