@@ -243,8 +243,21 @@ app.post('/api/admin/photos', requireAdmin, async (req, res) => {
 
 app.get('/api/admin/photos/:bookingId', requireAdmin, async (req, res) => {
   try {
-    const bookingId = parseInt(req.params.bookingId);
-    const photos = await PhotoStorage.getByBookingId(bookingId);
+    let bookingId = req.params.bookingId;
+    let numericBookingId;
+    
+    // Handle string booking IDs like "TJ1757832854212"
+    if (typeof bookingId === 'string' && bookingId.startsWith('TJ')) {
+      const booking = await BookingStorage.findByBookingId(bookingId);
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
+      numericBookingId = booking.id;
+    } else {
+      numericBookingId = parseInt(bookingId);
+    }
+    
+    const photos = await PhotoStorage.getByBookingId(numericBookingId);
     res.json(photos);
   } catch (error) {
     console.error('Get photos error:', error);

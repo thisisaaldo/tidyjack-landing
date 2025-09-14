@@ -1101,14 +1101,16 @@ app.post('/api/admin/photos', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Photo type must be "before" or "after"' });
     }
 
-    // Find the booking by string ID to get the numeric ID
+    // CRITICAL FIX: Find the booking by string ID to get the numeric ID
     let numericBookingId;
     if (typeof bookingId === 'string' && bookingId.startsWith('TJ')) {
+      console.log(`Looking up booking by string ID: ${bookingId}`);
       const booking = await BookingStorage.findByBookingId(bookingId);
       if (!booking) {
         return res.status(404).json({ error: 'Booking not found' });
       }
       numericBookingId = booking.id;
+      console.log(`Found booking, numeric ID: ${numericBookingId}`);
     } else {
       numericBookingId = parseInt(bookingId);
     }
