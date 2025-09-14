@@ -73,8 +73,17 @@ app.post('/api/booking', async (req, res) => {
       try {
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
         
-        // Verify payment status
-        if (paymentIntent.status !== 'succeeded') {
+        // Verify payment status - allow processing for async payment methods like Afterpay
+        if (paymentIntent.status === 'succeeded') {
+          paymentStatus = 'paid';
+          verifiedAmount = paymentIntent.amount / 100;
+          verifiedPaymentId = paymentIntent.id;
+        } else if (paymentIntent.status === 'processing') {
+          // Afterpay and other async payment methods may be processing
+          paymentStatus = 'processing';
+          verifiedAmount = paymentIntent.amount / 100;
+          verifiedPaymentId = paymentIntent.id;
+        } else {
           return res.status(400).json({ error: 'Payment not completed' });
         }
         
@@ -96,9 +105,7 @@ app.post('/api/booking', async (req, res) => {
           return res.status(400).json({ error: 'Invalid payment currency' });
         }
         
-        paymentStatus = 'paid';
-        verifiedAmount = paymentIntent.amount / 100; // Convert back to dollars
-        verifiedPaymentId = paymentIntent.id;
+        // Amount and payment ID already set above based on status
         
       } catch (paymentError) {
         console.error('Payment verification error:', paymentError);
@@ -188,6 +195,11 @@ app.post('/api/booking', async (req, res) => {
               <p style="margin: 0; color: #065f46;"><strong>✅ Payment Confirmed</strong></p>
               <p style="margin: 5px 0 0 0; color: #065f46; font-size: 14px;">Amount: $${verifiedAmount} AUD</p>
             </div>
+            ` : paymentStatus === 'processing' ? `
+            <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 10px; border-radius: 6px; margin-top: 10px;">
+              <p style="margin: 0; color: #92400e;"><strong>⏳ Payment Processing</strong></p>
+              <p style="margin: 5px 0 0 0; color: #92400e; font-size: 14px;">Amount: $${verifiedAmount} AUD - You'll receive confirmation once payment completes</p>
+            </div>
             ` : ''}
           </div>
           
@@ -230,7 +242,11 @@ ${notes !== 'None' ? `- Special Notes: ${notes}` : ''}
 ${paymentStatus === 'paid' ? `
 ✅ PAYMENT CONFIRMED
 - Amount Paid: $${verifiedAmount} AUD
-- Payment ID: ${verifiedPaymentId}` : ''}
+- Payment ID: ${verifiedPaymentId}` : paymentStatus === 'processing' ? `
+⏳ PAYMENT PROCESSING
+- Amount: $${verifiedAmount} AUD
+- Payment ID: ${verifiedPaymentId}
+- Status: Payment is being processed, you'll receive confirmation once complete` : ''}
 
 NEXT STEPS:
 Our team will review your booking request and contact you within 24 hours to confirm availability and provide a detailed quote.
@@ -277,6 +293,13 @@ Have questions? Please reply to this email.
           <p><strong>Payment ID:</strong> ${verifiedPaymentId}</p>
           <p><strong>Status:</strong> Confirmed</p>
         </div>
+        ` : paymentStatus === 'processing' ? `
+        <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="color: #92400e; margin-top: 0;">⏳ Payment Processing</h3>
+          <p><strong>Amount:</strong> $${verifiedAmount} AUD</p>
+          <p><strong>Payment ID:</strong> ${verifiedPaymentId}</p>
+          <p><strong>Status:</strong> Being processed - confirmation pending</p>
+        </div>
         ` : ''}
         
         <p style="color: #666; font-size: 14px;">
@@ -311,7 +334,11 @@ ${paymentStatus === 'paid' ? `
 💳 PAYMENT RECEIVED
 - Amount: $${verifiedAmount} AUD
 - Payment ID: ${verifiedPaymentId}
-- Status: Confirmed` : ''}
+- Status: Confirmed` : paymentStatus === 'processing' ? `
+⏳ PAYMENT PROCESSING
+- Amount: $${verifiedAmount} AUD
+- Payment ID: ${verifiedPaymentId}
+- Status: Being processed - you'll receive updates once complete` : ''}
 
 Submitted: ${bookingDetails.submittedAt}
 Please contact the customer within 24 hours to confirm availability.
@@ -374,10 +401,11 @@ app.post('/api/create-payment-intent', async (req, res) => {
     
     const serverAmount = servicePrices[bookingData?.service] || 119;
 
-    // Create payment intent
+    // Create payment intent with Afterpay support
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(serverAmount * 100), // Convert to cents
       currency: 'aud', // Australian dollars
+      payment_method_types: ['card', 'afterpay_clearpay'], // Enable Afterpay
       metadata: {
         bookingType: bookingData?.service || 'cleaning_service',
         customerEmail: bookingData?.email || '',
