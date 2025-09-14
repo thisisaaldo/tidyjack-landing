@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { APIProvider } from '@vis.gl/react-google-maps'
 import PaymentForm from './PaymentForm'
 import GooglePlacesAutocomplete from './GooglePlacesAutocomplete'
 
@@ -282,18 +281,17 @@ export default function BookingForm() {
           Address
         </label>
         {googleMapsApiKey ? (
-          <APIProvider apiKey={googleMapsApiKey}>
-            <GooglePlacesAutocomplete
-              value={formData.address}
-              onChange={(value) => setFormData({...formData, address: value})}
-              onPlaceSelect={(place) => {
-                console.log('Selected place:', place)
-              }}
-              placeholder="Start typing your address..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </APIProvider>
+          <GooglePlacesAutocomplete
+            value={formData.address}
+            onChange={(value) => setFormData({...formData, address: value})}
+            onPlaceSelect={(place) => {
+              console.log('Selected place:', place)
+            }}
+            placeholder="Start typing your address..."
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            apiKey={googleMapsApiKey}
+            required
+          />
         ) : (
           <input
             type="text"

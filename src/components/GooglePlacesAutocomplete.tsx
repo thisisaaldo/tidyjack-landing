@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useMapsLibrary } from '@vis.gl/react-google-maps'
 
 interface GooglePlacesAutocompleteProps {
   value: string
   onChange: (value: string) => void
-  onPlaceSelect?: (place: google.maps.places.PlaceResult) => void
+  onPlaceSelect?: (place: any) => void
   placeholder?: string
   className?: string
   required?: boolean
+  apiKey: string
 }
 
 export default function GooglePlacesAutocomplete({
@@ -16,57 +16,111 @@ export default function GooglePlacesAutocomplete({
   onPlaceSelect,
   placeholder = "Enter your address",
   className = "",
-  required = false
+  required = false,
+  apiKey
 }: GooglePlacesAutocompleteProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null)
-  const places = useMapsLibrary('places')
+  const autocompleteRef = useRef<HTMLElement | null>(null)
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!places || !inputRef.current) return
+    // Load Google Maps script
+    const loadGoogleMaps = () => {
+      if (window.google?.maps?.importLibrary) {
+        setIsLoaded(true)
+        return
+      }
 
-    const autocompleteInstance = new places.Autocomplete(inputRef.current, {
-      fields: ['place_id', 'geometry', 'name', 'formatted_address', 'address_components'],
-      types: ['address'],
-      componentRestrictions: { country: 'au' } // Restrict to Australia
-    })
-
-    setAutocomplete(autocompleteInstance)
-
-    const listener = autocompleteInstance.addListener('place_changed', () => {
-      const place = autocompleteInstance.getPlace()
+      const script = document.createElement('script')
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`
+      script.async = true
+      script.defer = true
       
-      if (place && place.formatted_address) {
-        onChange(place.formatted_address)
-        onPlaceSelect?.(place)
+      script.onload = () => {
+        setIsLoaded(true)
       }
-    })
+      
+      script.onerror = () => {
+        setError('Failed to load Google Maps API')
+      }
 
-    return () => {
-      if (listener) {
-        google.maps.event.removeListener(listener)
-      }
+      document.head.appendChild(script)
     }
-  }, [places, onChange, onPlaceSelect])
 
-  // Update input value when prop value changes
+    loadGoogleMaps()
+  }, [apiKey])
+
   useEffect(() => {
-    if (inputRef.current && inputRef.current.value !== value) {
-      inputRef.current.value = value
-    }
-  }, [value])
+    if (!isLoaded || !autocompleteRef.current) return
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value)
+    const initAutocomplete = async () => {
+      try {
+        // Use the new Places API
+        const { PlaceAutocompleteElement } = await google.maps.importLibrary("places") as google.maps.PlacesLibrary
+        
+        const autocompleteElement = new PlaceAutocompleteElement({
+          componentRestrictions: { country: 'AU' },
+          fields: ['place_id', 'geometry', 'name', 'formatted_address']
+        })
+
+        autocompleteElement.addEventListener('gmp-placeselect', (event: any) => {
+          const place = event.place
+          if (place && place.formattedAddress) {
+            onChange(place.formattedAddress)
+            onPlaceSelect?.(place)
+          }
+        })
+
+        // Replace the input with the autocomplete element
+        if (autocompleteRef.current?.parentNode) {
+          autocompleteRef.current.parentNode.replaceChild(autocompleteElement, autocompleteRef.current)
+          autocompleteRef.current = autocompleteElement
+          
+          // Style the autocomplete element
+          autocompleteElement.style.width = '100%'
+          autocompleteElement.style.height = '42px'
+          autocompleteElement.style.padding = '8px 12px'
+          autocompleteElement.style.border = '1px solid #d1d5db'
+          autocompleteElement.style.borderRadius = '8px'
+          autocompleteElement.style.fontSize = '16px'
+          autocompleteElement.style.outline = 'none'
+          
+          // Set placeholder and value
+          autocompleteElement.placeholder = placeholder
+          if (value) {
+            autocompleteElement.value = value
+          }
+        }
+      } catch (err) {
+        console.error('Error initializing Places Autocomplete:', err)
+        setError('Failed to initialize address autocomplete')
+      }
+    }
+
+    initAutocomplete()
+  }, [isLoaded, onChange, onPlaceSelect, placeholder, value])
+
+  if (error) {
+    // Fallback to regular input on error
+    return (
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={className}
+        required={required}
+      />
+    )
   }
 
   return (
     <input
-      ref={inputRef}
+      ref={autocompleteRef}
       type="text"
       value={value}
-      onChange={handleInputChange}
-      placeholder={placeholder}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={isLoaded ? placeholder : "Loading address search..."}
       className={className}
       required={required}
     />
