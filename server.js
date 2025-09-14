@@ -221,9 +221,8 @@ Please contact the customer within 24 hours to confirm availability.
       text: customerEmailText,
     });
 
-    // Send business notification email (you'll need to provide your email)
-    // For now, I'll use a placeholder - you can update this with your actual email
-    const businessEmail = process.env.BUSINESS_EMAIL || 'your-email@example.com';
+    // Send business notification email  
+    const businessEmail = process.env.BUSINESS_EMAIL || 'hellotidyjack@gmail.com';
     
     await sendEmail({
       to: businessEmail,
@@ -231,6 +230,8 @@ Please contact the customer within 24 hours to confirm availability.
       html: businessEmailHtml,
       text: businessEmailText,
     });
+
+    console.log(`✅ Booking ${bookingDetails.bookingId} processed successfully - emails sent to ${email} and ${businessEmail}`);
 
     res.json({ 
       success: true, 
