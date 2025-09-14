@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="240" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#111" stroke-width="2">
+  <rect x="1" y="1" width="318" height="238" rx="16" fill="#fff" stroke="#e5e5e5"/>
+  <path d="M70 170c0-24 20-44 44-44h28c24 0 44 20 44 44" fill="#fff"/>
+  <circle cx="110" cy="110" r="24"/>
+  <circle cx="178" cy="110" r="24"/>
+  <path d="M134 110 l16 12 l16 -12"/>
+  <path d="M84 96 l-18 -22 l22 10"/>
+  <path d="M204 96 l18 -22 l-22 10"/>
+  <circle cx="126" cy="106" r="3" fill="#111"/>
+  <circle cx="162" cy="106" r="3" fill="#111"/>
+  <path d="M120 148 q24 16 48 0"/>
+  <text x="160" y="210" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#333">TidyJack</text>
+</svg>
