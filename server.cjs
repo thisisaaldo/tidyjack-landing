@@ -1197,6 +1197,49 @@ app.use('/api/photos', async (req, res, next) => {
   }
 });
 
+// Serve photos publicly (for emails) - no authentication required
+app.use('/api/public/photos', async (req, res, next) => {
+  // Only handle GET requests for photo serving
+  if (req.method !== 'GET') {
+    return next();
+  }
+
+  try {
+    const fs = require('fs').promises;
+    const path = require('path');
+    
+    // req.url contains the path after /api/public/photos mount point
+    const filePath = req.url.startsWith('/') ? req.url.slice(1) : req.url;
+    
+    // Security: ensure path is within allowed directory
+    if (!filePath.startsWith('tidyjacks-photos/')) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    // Construct local file path
+    const localFilePath = path.join(__dirname, 'uploads', filePath);
+    
+    // Check if file exists
+    try {
+      await fs.access(localFilePath);
+    } catch {
+      return res.status(404).json({ error: 'Photo not found' });
+    }
+    
+    // Set proper headers and serve file
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    
+    // Stream the file
+    const fileBuffer = await fs.readFile(localFilePath);
+    res.send(fileBuffer);
+    
+  } catch (error) {
+    console.error('Public photo serve error:', error);
+    res.status(500).json({ error: 'Failed to serve photo' });
+  }
+});
+
 // Send before/after photos to customer
 app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
   try {
@@ -1258,12 +1301,12 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
           <div style="margin: 30px 0;">
             <div style="text-align: center; margin-bottom: 30px;">
               <h3 style="color: #333; margin-bottom: 15px;">📷 Before</h3>
-              <img src="https://www.tidyjacks.com${beforePhoto.file_url}" alt="Before cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+              <img src="https://www.tidyjacks.com/api/public/photos${beforePhoto.file_path}" alt="Before cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             </div>
             
             <div style="text-align: center;">
               <h3 style="color: #333; margin-bottom: 15px;">✨ After</h3>
-              <img src="https://www.tidyjacks.com${afterPhoto.file_url}" alt="After cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+              <img src="https://www.tidyjacks.com/api/public/photos${afterPhoto.file_path}" alt="After cleaning" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             </div>
           </div>
 
