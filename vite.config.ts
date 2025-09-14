@@ -11,9 +11,13 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5000,
+    allowedHosts: ['.replit.dev', '.replit.co', 'localhost'],
     hmr: {
+      port: 5000,
       clientPort: 443,
-      host: 'localhost'
-    }
+      protocol: 'wss'
+    },
+    cors: true,
+    strictPort: false
   }
 })
