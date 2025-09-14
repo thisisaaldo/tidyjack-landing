@@ -3,8 +3,8 @@ const cors = require('cors');
 const path = require('path');
 const Stripe = require('stripe');
 
-// Import database storage (CommonJS)
-const { CustomerStorage, BookingStorage, PhotoStorage } = require('./server/storage.cjs');
+// Import database storage classes (CommonJS)
+const { CustomerStorage: CustomerStorageClass, BookingStorage: BookingStorageClass, PhotoStorage: PhotoStorageClass } = require('./server/storage.cjs');
 const { ObjectStorageService, ObjectNotFoundError } = require('./server/objectStorage.cjs');
 
 const app = express();
@@ -76,13 +76,10 @@ let CustomerStorage, BookingStorage, PhotoStorage;
 
 async function initializeServices() {
   try {
-    // Import the storage constructors
-    const storageModule = require('./server/storage.cjs');
-    
-    // Initialize storage instances
-    CustomerStorage = new storageModule.CustomerStorage();
-    BookingStorage = new storageModule.BookingStorage();
-    PhotoStorage = new storageModule.PhotoStorage();
+    // Initialize storage instances using the imported classes
+    CustomerStorage = CustomerStorageClass;
+    BookingStorage = BookingStorageClass;
+    PhotoStorage = PhotoStorageClass;
     
     console.log('✅ Storage services initialized successfully');
     return true;
@@ -182,7 +179,7 @@ app.post('/api/admin/photos', requireAdmin, async (req, res) => {
     });
 
     // Check if both photos exist
-    const allPhotos = await PhotoStorage.getBookingPhotos(parseInt(bookingId));
+    const allPhotos = await PhotoStorage.getByBookingId(parseInt(bookingId));
     const hasCompleteSet = allPhotos.length >= 2 && 
       allPhotos.some(p => p.photo_type === 'before') && 
       allPhotos.some(p => p.photo_type === 'after');
@@ -201,7 +198,7 @@ app.post('/api/admin/photos', requireAdmin, async (req, res) => {
 app.get('/api/admin/photos/:bookingId', requireAdmin, async (req, res) => {
   try {
     const bookingId = parseInt(req.params.bookingId);
-    const photos = await PhotoStorage.getBookingPhotos(bookingId);
+    const photos = await PhotoStorage.getByBookingId(bookingId);
     res.json(photos);
   } catch (error) {
     console.error('Get photos error:', error);
@@ -248,17 +245,17 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
     }
 
     // Get booking and photos
-    const booking = await BookingStorage.getById(parseInt(bookingId));
+    const booking = await BookingStorage.findByBookingId(bookingId);
     if (!booking) {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    const customer = await CustomerStorage.getById(booking.customer_id);
+    const customer = await CustomerStorage.findById(booking.customer_id);
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found' });
     }
 
-    const photos = await PhotoStorage.getBookingPhotos(parseInt(bookingId));
+    const photos = await PhotoStorage.getByBookingId(parseInt(bookingId));
     const beforePhoto = photos.find(p => p.photo_type === 'before');
     const afterPhoto = photos.find(p => p.photo_type === 'after');
 
@@ -267,7 +264,7 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
     }
 
     // Send email using Replit Mail
-    const { sendMail } = require('./src/utils/replitmail');
+    const { sendMail } = require('./server/replitmail.cjs');
     
     const emailHtml = `
       <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
@@ -346,12 +343,7 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Catch-all handler for SPA routing - serve index.html for non-API routes
-app.get('*', (req, res) => {
-  // Don't serve index.html for API routes that weren't found
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API endpoint not found' });
-  }
-  
+app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
