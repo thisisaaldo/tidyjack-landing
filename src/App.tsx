@@ -58,11 +58,11 @@ function App() {
         <section className="mb-8 reveal">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Crystal Clear Window Cleaning in Melbourne
+              Melbourne's #1 Window Cleaning
             </h1>
             
             <p className="mt-3 text-black/70 text-lg md:text-xl">
-              Book trusted, insured window cleaners online in under a minute — no phone calls, no quotes, no hassle.
+              Book insured cleaners online in seconds — no calls, no quotes.
             </p>
           </div>
         </section>
