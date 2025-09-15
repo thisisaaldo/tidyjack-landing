@@ -26,6 +26,7 @@ export default function BookingForm() {
   const [showPayment, setShowPayment] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState(0)
   const [paymentType, setPaymentType] = useState<'deposit' | 'full'>('deposit')
+  const [showPricingInfo, setShowPricingInfo] = useState(false)
 
   // Calculate pricing based on service
   const getServicePrice = (service: string) => {
@@ -338,9 +339,18 @@ export default function BookingForm() {
             <option value="deepclean">One-off Deep Clean - From $60</option>
           </optgroup>
         </select>
-        <p className="text-sm text-gray-600 mt-1">
-          💡 Exterior-only services are 60% of full pricing. Retail pricing may vary based on size.
-        </p>
+        <button
+          type="button"
+          onClick={() => setShowPricingInfo(!showPricingInfo)}
+          className="text-sm text-blue-600 hover:text-blue-700 mt-1 flex items-center gap-1 underline"
+        >
+          💡 Pricing info {showPricingInfo ? '▼' : '▶'}
+        </button>
+        {showPricingInfo && (
+          <p className="text-sm text-gray-600 mt-1 p-2 bg-blue-50 rounded border">
+            Exterior-only services are 60% of full pricing. Retail pricing may vary based on size.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
