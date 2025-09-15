@@ -61,10 +61,10 @@ function App() {
               <span 
                 className="inline-block overflow-hidden whitespace-nowrap border-r-2 sm:border-r-4 border-blue-600 animate-pulse"
                 style={{
-                  animation: 'typewriter 3s steps(20, end) infinite, blink 1s step-end infinite'
+                  animation: 'typewriter 3s steps(30, end) infinite, blink 1s step-end infinite'
                 }}
               >
-                Crystal clear windows
+                Crystal clear windows in Melbourne
               </span>
             </h1>
             
