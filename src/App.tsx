@@ -58,30 +58,11 @@ function App() {
         <section className="mb-8 reveal">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              <span 
-                className="inline-block overflow-hidden whitespace-nowrap border-r-2 sm:border-r-4 border-blue-600 animate-pulse"
-                style={{
-                  animation: 'typewriter 3s steps(37, end) infinite, blink 1s step-end infinite'
-                }}
-              >
-                Crystal clear windows in Melbourne
-              </span>
+              Crystal Clear Window Cleaning in Melbourne
             </h1>
             
-            <style>{`
-              @keyframes typewriter {
-                0% { width: 0; }
-                50% { width: 100%; }
-                100% { width: 100%; }
-              }
-              
-              @keyframes blink {
-                0%, 50% { border-color: transparent; }
-                51%, 100% { border-color: #2563eb; }
-              }
-            `}</style>
             <p className="mt-3 text-black/70 text-lg md:text-xl">
-              Book professional window cleaning online in seconds — no quotes, no hassle.
+              Book trusted, insured window cleaners online in under a minute — no phone calls, no quotes, no hassle.
             </p>
           </div>
         </section>
