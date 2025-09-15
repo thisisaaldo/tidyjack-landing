@@ -360,3 +360,5 @@ export default function BookingForm() {
     </div>
   )
 }
+
+export default BookingForm
