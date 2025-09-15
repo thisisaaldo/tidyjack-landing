@@ -172,10 +172,9 @@ export default function BookingForm() {
           <div className="text-lg font-semibold text-blue-800">{selectedService.label}</div>
           <div className="text-2xl font-bold text-blue-600">${selectedService.price} AUD</div>
         </div>
-      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Full Name *

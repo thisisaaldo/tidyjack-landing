@@ -927,13 +927,25 @@ app.get('/api/admin/dashboard', requireAdmin, async (req, res) => {
     const pendingRevenue = bookingsWithBalance
       .reduce((sum, item) => sum + item.remaining_balance, 0);
 
+    // Get completed jobs
+    const completedJobs = allBookings.filter(b => b.job_status === 'completed');
+    const activeJobs = allBookings.filter(b => b.job_status !== 'completed');
+
     res.json({
       totalCustomers,
       totalBookings,
       pendingPayments,
       totalRevenue: totalRevenue / 100, // Convert cents to dollars
       pendingRevenue: pendingRevenue / 100,
-      recentBookings: allBookings.slice(0, 5) // Last 5 bookings
+      recentBookings: activeJobs.slice(0, 10).map(booking => ({
+        ...booking,
+        remaining_balance: booking.remaining_balance || 0
+      })),
+      completedJobs: completedJobs.slice(0, 20).map(booking => ({
+        ...booking,
+        remaining_balance: booking.remaining_balance || 0
+      })),
+      totalCompletedJobs: completedJobs.length
     });
   } catch (error) {
     console.error('Admin dashboard error:', error);
@@ -1139,9 +1151,28 @@ app.post('/api/admin/photos', requireAdmin, async (req, res) => {
       allPhotos.some(p => p.photo_type === 'before') && 
       allPhotos.some(p => p.photo_type === 'after');
     
+    // NEW: Auto-complete job when both photos exist
+    let jobCompleted = false;
+    if (hasCompleteSet) {
+      try {
+        // Get the booking's string ID for updateJobStatus
+        const booking = await BookingStorage.findById(numericBookingId);
+        if (booking) {
+          console.log(`Auto-completing job for booking ${booking.booking_id} after ${photoType} photo upload`);
+          await BookingStorage.updateJobStatus(booking.booking_id, 'completed');
+          jobCompleted = true;
+          console.log(`✅ Job ${booking.booking_id} marked as completed automatically`);
+        }
+      } catch (error) {
+        console.error('Error auto-completing job:', error);
+        // Don't fail the photo upload if job completion fails
+      }
+    }
+    
     res.json({ 
       photo,
-      hasCompleteSet
+      hasCompleteSet,
+      jobCompleted
     });
   } catch (error) {
     console.error('Photo save error:', error);
@@ -1358,6 +1389,16 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
     } catch (generalError) {
       console.error('General error processing photos for attachment:', generalError);
       return res.status(500).json({ error: 'Failed to process photo files for email' });
+    }
+
+    // Automatically mark job as completed after photos are sent
+    try {
+      const { BookingStorage } = require('./server/storage.cjs');
+      await BookingStorage.updateJobStatus(booking.booking_id, 'completed');
+      console.log(`✅ Job ${booking.booking_id} marked as completed after photos sent`);
+    } catch (statusError) {
+      console.error('Error updating job status:', statusError);
+      // Continue with email sending even if status update fails
     }
 
     // Send email using Replit Mail

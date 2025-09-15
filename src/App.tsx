@@ -38,7 +38,7 @@ function App() {
       <header className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur">
         <div className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
           <a
-            href="#top"
+            href="/"
             className="text-lg font-semibold tracking-tight hover:opacity-80 focus:opacity-80 rounded-md outline-none focus:outline-none cursor-pointer flex items-center"
             aria-label="Go to home"
           >
@@ -103,9 +103,6 @@ function App() {
             </div>
           </div>
         </section>
-
-
-
 
         {/* FAQ */}
         <section id="faq" className="py-10 border-t border-black/10 reveal">

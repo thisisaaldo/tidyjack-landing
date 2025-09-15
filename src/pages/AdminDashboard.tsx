@@ -39,6 +39,8 @@ interface DashboardStats {
   totalRevenue: number;
   pendingRevenue: number;
   recentBookings: Booking[];
+  completedJobs: Booking[];
+  totalCompletedJobs: number;
 }
 
 const AdminDashboard = () => {
@@ -267,12 +269,19 @@ const AdminDashboard = () => {
         pendingPayments: typeof data.pendingPayments === 'number' ? data.pendingPayments : 0,
         totalRevenue: typeof data.totalRevenue === 'number' ? data.totalRevenue : 0,
         pendingRevenue: typeof data.pendingRevenue === 'number' ? data.pendingRevenue : 0,
-        recentBookings: []
+        recentBookings: [],
+        completedJobs: [],
+        totalCompletedJobs: typeof data.totalCompletedJobs === 'number' ? data.totalCompletedJobs : 0
       };
 
       // Sanitize recent bookings array
       if (Array.isArray(data.recentBookings)) {
         sanitizedData.recentBookings = data.recentBookings.map(sanitizeBookingData);
+      }
+
+      // Sanitize completed jobs array
+      if (Array.isArray(data.completedJobs)) {
+        sanitizedData.completedJobs = data.completedJobs.map(sanitizeBookingData);
       }
 
       return sanitizedData;
@@ -285,7 +294,9 @@ const AdminDashboard = () => {
         pendingPayments: 0,
         totalRevenue: 0,
         pendingRevenue: 0,
-        recentBookings: []
+        recentBookings: [],
+        completedJobs: [],
+        totalCompletedJobs: 0
       };
     }
   };
@@ -498,14 +509,18 @@ const AdminDashboard = () => {
             {activeTab === 'overview' && dashboardData && (
               <div className="space-y-6">
                 {/* Stats Cards - Mobile Optimized */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
                   <div className="bg-white p-6 rounded-lg shadow">
                     <h3 className="text-sm font-medium text-gray-500">Total Customers</h3>
                     <p className="text-3xl font-bold text-gray-900">{dashboardData.totalCustomers}</p>
                   </div>
                   <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-sm font-medium text-gray-500">Total Bookings</h3>
-                    <p className="text-3xl font-bold text-gray-900">{dashboardData.totalBookings}</p>
+                    <h3 className="text-sm font-medium text-gray-500">Active Bookings</h3>
+                    <p className="text-3xl font-bold text-gray-900">{dashboardData.recentBookings.length}</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-lg shadow">
+                    <h3 className="text-sm font-medium text-gray-500">Completed Jobs</h3>
+                    <p className="text-3xl font-bold text-green-600">{dashboardData.totalCompletedJobs}</p>
                   </div>
                   <div className="bg-white p-6 rounded-lg shadow">
                     <h3 className="text-sm font-medium text-gray-500">Pending Payments</h3>
@@ -524,7 +539,7 @@ const AdminDashboard = () => {
                 {/* Recent Bookings - Mobile Optimized */}
                 <div className="bg-white shadow rounded-lg">
                   <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-medium text-gray-900">Recent Bookings</h3>
+                    <h3 className="text-lg font-medium text-gray-900">Active Jobs</h3>
                   </div>
                   <div className="divide-y divide-gray-200">
                     {dashboardData.recentBookings.map((booking) => (
@@ -714,6 +729,58 @@ const AdminDashboard = () => {
                         Jobs will appear here once you mark them as completed and upload before/after photos.
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Other tabs placeholder */}
+            {activeTab !== 'overview' && activeTab !== 'photos' && activeTab !== 'done-jobs' && (
+              <div className="space-y-6">
+                <div className="bg-white shadow rounded-lg">
+                  <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">✅ Completed Jobs</h3>
+                      <p className="text-sm text-gray-500 mt-1">Jobs with photos sent to customers</p>
+                    </div>
+                    <div className="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">
+                      {dashboardData.totalCompletedJobs} completed
+                    </div>
+                  </div>
+                  
+                  <div className="divide-y divide-gray-200">
+                    {dashboardData.completedJobs.length > 0 ? (
+                      dashboardData.completedJobs.map((booking) => (
+                        <div key={booking.id} className="px-4 sm:px-6 py-4">
+                          <div className="flex items-start justify-between space-x-3">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">{booking.booking_id}</p>
+                              <p className="text-sm text-gray-500 mt-1">{booking.service_name}</p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Completed: {formatSafeDate(booking.booking_date)} • ${(booking.total_amount_cents / 100).toFixed(2)}
+                              </p>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                ✅ Done
+                              </span>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border shrink-0 ${getPaymentStatusColor(booking.payment_status)}`}>
+                                {booking.payment_status.replace('_', ' ')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 sm:px-6 py-8 text-center">
+                        <div className="text-gray-400 text-4xl mb-4">📷</div>
+                        <p className="text-gray-500 text-lg font-medium">No completed jobs yet</p>
+                        <p className="text-gray-400 text-sm mt-2">
+                          Jobs will appear here after photos are sent to customers
+                        </p>
+                      </div>
+                    )}
+>>>>>>> cf356607c95fcea48007b8bb52ed1d937a767c51
                   </div>
                 </div>
               </div>

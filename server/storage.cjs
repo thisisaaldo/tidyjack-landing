@@ -31,6 +31,7 @@ const bookings = pgTable('bookings', {
   deposit_cents: integer('deposit_cents').default(0),
   amount_paid_cents: integer('amount_paid_cents').default(0),
   payment_status: varchar('payment_status', { length: 30 }).notNull().default('unpaid'),
+  job_status: varchar('job_status', { length: 30 }).notNull().default('scheduled'),
   stripe_payment_intent_id: varchar('stripe_payment_intent_id', { length: 100 }),
   created_at: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
   updated_at: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`)
@@ -97,6 +98,11 @@ class BookingStorage {
     return booking || null;
   }
 
+  static async findById(id) {
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
+    return booking || null;
+  }
+
   static async getAll() {
     return db.select().from(bookings).orderBy(desc(bookings.created_at));
   }
@@ -123,6 +129,25 @@ class BookingStorage {
       })
       .where(eq(bookings.booking_id, bookingId))
       .returning();
+  }
+
+  static async updateJobStatus(bookingId, jobStatus) {
+    return db
+      .update(bookings)
+      .set({
+        job_status: jobStatus,
+        updated_at: sql`CURRENT_TIMESTAMP`
+      })
+      .where(eq(bookings.booking_id, bookingId))
+      .returning();
+  }
+
+  static async getByJobStatus(jobStatus) {
+    return db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.job_status, jobStatus))
+      .orderBy(desc(bookings.created_at));
   }
 
   static async getBookingsByPaymentStatus(status) {
