@@ -33,14 +33,18 @@ export const bookings = pgTable('bookings', {
   amount_paid_cents: integer('amount_paid_cents').default(0),
   payment_status: varchar('payment_status', { length: 30 }).notNull().default('unpaid'), 
   // Valid statuses: 'unpaid', 'deposit_paid', 'paid_in_full', 'failed', 'refunded'
+  job_status: varchar('job_status', { length: 30 }).notNull().default('pending'),
+  // Valid statuses: 'pending', 'in_progress', 'completed', 'cancelled'
   stripe_payment_intent_id: varchar('stripe_payment_intent_id', { length: 100 }),
+  completed_at: timestamp('completed_at'), // When job was marked as completed
   created_at: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
   updated_at: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`)
 }, (table) => ({
   customerIdx: index('idx_bookings_customer_id').on(table.customer_id),
   bookingIdIdx: index('idx_bookings_booking_id').on(table.booking_id),
   dateIdx: index('idx_bookings_date').on(table.booking_date),
-  paymentStatusIdx: index('idx_bookings_payment_status').on(table.payment_status)
+  paymentStatusIdx: index('idx_bookings_payment_status').on(table.payment_status),
+  jobStatusIdx: index('idx_bookings_job_status').on(table.job_status)
 }));
 
 // Photos table for before/after images

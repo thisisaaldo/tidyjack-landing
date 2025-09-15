@@ -21,6 +21,7 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 // Middleware - CORS security configuration
 const allowedOrigins = [
   'http://localhost:5000',
+  'http://localhost:5001',
   'https://1418cf15-1ec1-4817-a08e-7b0f3ecf5cb6-00-2dhmm2uavx57i.kirk.replit.dev',
   'https://www.tidyjacks.com',
   'https://tidyjacks.com',
@@ -108,7 +109,13 @@ async function sendEmail(message) {
       : null;
 
   if (!authToken) {
-    throw new Error("No authentication token found. Please ensure you're running in Replit environment.");
+    // For local development, just log the email instead of sending
+    console.log('📧 EMAIL WOULD BE SENT (Local Development Mode):');
+    console.log('To:', message.to);
+    console.log('Subject:', message.subject);
+    console.log('Text:', message.text);
+    console.log('---');
+    return { success: true, message: 'Email logged for local development' };
   }
 
   const response = await fetch("https://connectors.replit.com/api/v2/mailer/send", {
@@ -192,8 +199,8 @@ app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) =
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Verify payment if provided
-    let paymentStatus = 'pending';
+    // Handle payment if provided (optional for now)
+    let paymentStatus = 'unpaid';
     let verifiedAmount = null;
     let verifiedPaymentId = null;
     
@@ -268,7 +275,7 @@ app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) =
       bookingId: `TJ${Date.now()}`,
       paymentIntentId: verifiedPaymentId,
       amountPaid: verifiedAmount,
-      paymentType: paymentType || (verifiedAmount && verifiedAmount < (SERVICE_PRICES[service] || 200) ? 'deposit' : 'full'),
+      paymentType: paymentType || 'unpaid',
       fullAmount: SERVICE_PRICES[service] || 200,
       paymentStatus,
       submittedAt: new Date().toLocaleString('en-AU', {
@@ -335,7 +342,7 @@ app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) =
         <div style="background: white; padding: 30px; border-radius: 12px; border: 1px solid #e5e5e5;">
           <h2 style="color: #333; margin-top: 0;">Dear ${name},</h2>
           <p style="color: #666; font-size: 16px; line-height: 1.6;">
-            Thank you for choosing TidyJacks Professional Cleaning Services. We have received your booking request and will contact you within 24 hours to confirm the details.
+            Thank you for choosing TidyJacks Professional Cleaning Services. We have received your booking request and will contact you within 24 hours to confirm availability and arrange payment.
           </p>
           
           <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -378,7 +385,7 @@ app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) =
           <div style="background: #f0f9ff; border: 1px solid #0ea5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0; color: #0c4a6e;">
               <strong>Next Steps:</strong><br>
-              Our team will review your booking request and contact you within 24 hours to confirm availability and provide a detailed quote.
+              Our team will review your booking request and contact you within 24 hours to confirm availability and arrange payment. No payment is required at this time.
             </p>
           </div>
           
@@ -396,7 +403,7 @@ app.post('/api/booking', rateLimit, validateAndSanitizeInput, async (req, res) =
     const customerEmailText = `
 Dear ${name},
 
-Thank you for choosing TidyJacks Professional Cleaning Services. We have received your booking request and will contact you within 24 hours to confirm the details.
+Thank you for choosing TidyJacks Professional Cleaning Services. We have received your booking request and will contact you within 24 hours to confirm availability and arrange payment.
 
 BOOKING DETAILS:
 - Booking ID: ${bookingDetails.bookingId}
@@ -428,7 +435,7 @@ ${bookingDetails.paymentType === 'deposit' ?
 - Status: Payment is being processed, you'll receive confirmation once complete` : ''}
 
 NEXT STEPS:
-Our team will review your booking request and contact you within 24 hours to confirm availability and provide a detailed quote.
+Our team will review your booking request and contact you within 24 hours to confirm availability and arrange payment. No payment is required at this time.
 
 TidyJacks Professional Cleaning Services
 📧 CONTACT US DIRECTLY: hellotidyjack@gmail.com
@@ -1283,13 +1290,20 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
     const fs = require('fs').promises;
     const path = require('path');
     
+    // Ensure uploads directory exists
+    const uploadsDir = path.join(__dirname, 'uploads', 'tidyjacks-photos');
+    await fs.mkdir(uploadsDir, { recursive: true });
+    
     const attachments = [];
     
     try {
+      console.log(`Processing ${beforePhotos.length} before photos and ${afterPhotos.length} after photos for booking ${booking.booking_id}`);
+      
       let beforeCount = 0;
       // Process before photos - skip missing files
       for (const photo of beforePhotos) {
         const photoPath = path.join(__dirname, 'uploads', photo.file_path.substring(1)); // Remove leading slash
+        console.log(`Attempting to read before photo: ${photoPath}`);
         
         try {
           // Check if file exists before trying to read
@@ -1302,8 +1316,9 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
             contentType: 'image/jpeg',
             encoding: 'base64'
           });
+          console.log(`Successfully added before photo ${beforeCount} to attachments`);
         } catch (fileError) {
-          console.log(`Skipping missing before photo file: ${photoPath}`);
+          console.error(`Failed to read before photo file: ${photoPath}`, fileError.message);
           // Continue with next photo instead of failing
         }
       }
@@ -1312,6 +1327,7 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       // Process after photos - skip missing files  
       for (const photo of afterPhotos) {
         const photoPath = path.join(__dirname, 'uploads', photo.file_path.substring(1)); // Remove leading slash
+        console.log(`Attempting to read after photo: ${photoPath}`);
         
         try {
           // Check if file exists before trying to read
@@ -1324,14 +1340,18 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
             contentType: 'image/jpeg',
             encoding: 'base64'
           });
+          console.log(`Successfully added after photo ${afterCount} to attachments`);
         } catch (fileError) {
-          console.log(`Skipping missing after photo file: ${photoPath}`);
+          console.error(`Failed to read after photo file: ${photoPath}`, fileError.message);
           // Continue with next photo instead of failing
         }
       }
       
+      console.log(`Total attachments prepared: ${attachments.length}`);
+      
       // Check if we have any valid attachments after filtering
       if (attachments.length === 0) {
+        console.error(`No photo files found on disk for booking ${booking.booking_id}`);
         return res.status(400).json({ error: 'No photo files found on disk for this booking' });
       }
       
@@ -1405,7 +1425,9 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       </div>
     `;
 
-    await sendMail({
+    console.log(`Sending email to ${customer.email} with ${attachments.length} attachments`);
+    
+    const emailResult = await sendMail({
       to: customer.email,
       subject: `✨ Job Complete - Before & After Photos (${booking.booking_id})`,
       html: emailHtml,
@@ -1413,10 +1435,108 @@ app.post('/api/admin/photos/send-email', requireAdmin, async (req, res) => {
       attachments: attachments
     });
 
-    res.json({ success: true, message: 'Photos sent successfully' });
+    console.log('Email sent successfully:', emailResult);
+    res.json({ success: true, message: 'Photos sent successfully', emailResult });
   } catch (error) {
     console.error('Send photos email error:', error);
     res.status(500).json({ error: 'Failed to send photos email' });
+  }
+});
+
+// Test email endpoint for debugging
+app.post('/api/admin/test-email', requireAdmin, async (req, res) => {
+  try {
+    const { sendMail } = require('./server/replitmail.cjs');
+    
+    const testResult = await sendMail({
+      to: 'test@example.com', // Replace with your email for testing
+      subject: 'Test Email from TidyJacks',
+      html: '<h1>Test Email</h1><p>This is a test email to verify email functionality.</p>',
+      text: 'Test Email - This is a test email to verify email functionality.'
+    });
+    
+    res.json({ success: true, message: 'Test email sent successfully', result: testResult });
+  } catch (error) {
+    console.error('Test email error:', error);
+    res.status(500).json({ error: 'Failed to send test email', details: error.message });
+  }
+});
+
+// Debug endpoint to check photo files for a booking
+app.get('/api/admin/debug-photos/:bookingId', requireAdmin, async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const fs = require('fs').promises;
+    const path = require('path');
+    
+    // Get booking and photos
+    let booking, numericBookingId;
+    if (typeof bookingId === 'string' && bookingId.startsWith('TJ')) {
+      booking = await BookingStorage.findByBookingId(bookingId);
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
+      numericBookingId = booking.id;
+    } else {
+      numericBookingId = parseInt(bookingId);
+      const allBookings = await BookingStorage.getAll();
+      booking = allBookings.find(b => b.id === numericBookingId);
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
+    }
+    
+    const photos = await PhotoStorage.getByBookingId(numericBookingId);
+    const beforePhotos = photos.filter(p => p.photo_type === 'before');
+    const afterPhotos = photos.filter(p => p.photo_type === 'after');
+    
+    // Check file existence
+    const uploadsDir = path.join(__dirname, 'uploads', 'tidyjacks-photos');
+    const fileChecks = [];
+    
+    for (const photo of [...beforePhotos, ...afterPhotos]) {
+      const photoPath = path.join(__dirname, 'uploads', photo.file_path.substring(1));
+      try {
+        await fs.access(photoPath);
+        const stats = await fs.stat(photoPath);
+        fileChecks.push({
+          photo_id: photo.id,
+          photo_type: photo.photo_type,
+          file_path: photo.file_path,
+          full_path: photoPath,
+          exists: true,
+          size: stats.size,
+          modified: stats.mtime
+        });
+      } catch (error) {
+        fileChecks.push({
+          photo_id: photo.id,
+          photo_type: photo.photo_type,
+          file_path: photo.file_path,
+          full_path: photoPath,
+          exists: false,
+          error: error.message
+        });
+      }
+    }
+    
+    res.json({
+      booking: {
+        id: booking.id,
+        booking_id: booking.booking_id,
+        service_name: booking.service_name
+      },
+      photos: {
+        total: photos.length,
+        before: beforePhotos.length,
+        after: afterPhotos.length
+      },
+      fileChecks,
+      uploadsDir
+    });
+  } catch (error) {
+    console.error('Debug photos error:', error);
+    res.status(500).json({ error: 'Failed to debug photos', details: error.message });
   }
 });
 
@@ -1507,6 +1627,86 @@ async function sendBeforeAfterEmail(customer, booking, photoSet) {
     return false;
   }
 }
+
+// Update job status endpoint
+app.put('/api/admin/job-status', requireAdmin, rateLimit, async (req, res) => {
+  try {
+    const { bookingId, jobStatus } = req.body;
+
+    if (!BookingStorage) {
+      return res.status(500).json({ error: 'Database not initialized' });
+    }
+
+    if (!bookingId || !jobStatus) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Validate job status
+    const validStatuses = ['pending', 'in_progress', 'completed', 'cancelled'];
+    if (!validStatuses.includes(jobStatus)) {
+      return res.status(400).json({ error: 'Invalid job status' });
+    }
+
+    // Find booking by booking_id (string) or id (number)
+    let booking;
+    if (typeof bookingId === 'string' && bookingId.startsWith('TJ')) {
+      booking = await BookingStorage.findByBookingId(bookingId);
+    } else {
+      const allBookings = await BookingStorage.getAll();
+      booking = allBookings.find(b => b.id === parseInt(bookingId));
+    }
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    // Update job status in database
+    const updateData = {
+      job_status: jobStatus,
+      updated_at: new Date()
+    };
+
+    // If marking as completed, set completed_at timestamp
+    if (jobStatus === 'completed') {
+      updateData.completed_at = new Date();
+    }
+
+    // Update the booking
+    const updatedBooking = await BookingStorage.updateJobStatus(booking.id, updateData);
+
+    res.json({ 
+      message: 'Job status updated successfully', 
+      booking: updatedBooking 
+    });
+  } catch (error) {
+    console.error('Job status update error:', error);
+    res.status(500).json({ error: 'Failed to update job status' });
+  }
+});
+
+// Get completed jobs endpoint
+app.get('/api/admin/completed-jobs', requireAdmin, async (req, res) => {
+  try {
+    if (!BookingStorage) {
+      return res.status(500).json({ error: 'Database not initialized' });
+    }
+
+    const completedJobs = await BookingStorage.getCompletedJobs();
+    
+    // Format response with customer details
+    const formattedJobs = completedJobs.map(item => ({
+      ...item.booking,
+      customer: item.customer,
+      remaining_balance_cents: item.booking.total_amount_cents - item.booking.amount_paid_cents,
+      remaining_balance: (item.booking.total_amount_cents - item.booking.amount_paid_cents) / 100
+    }));
+
+    res.json(formattedJobs);
+  } catch (error) {
+    console.error('Completed jobs error:', error);
+    res.status(500).json({ error: 'Failed to load completed jobs' });
+  }
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

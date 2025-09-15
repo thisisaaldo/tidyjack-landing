@@ -1,9 +1,31 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import BookingForm from './components/BookingForm'
 import HeroDog from './components/HeroDog'
 import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
+  // Handle scroll position restoration on browser refresh
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+    };
+
+    const handleLoad = () => {
+      const savedScrollY = sessionStorage.getItem('scrollPosition');
+      if (savedScrollY) {
+        window.scrollTo(0, parseInt(savedScrollY, 10));
+        sessionStorage.removeItem('scrollPosition'); // Clean up after restoring
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('load', handleLoad);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('load', handleLoad);
+    };
+  }, []); // Run once on mount and cleanup on unmount
   // Check if current path is admin
   const isAdminPath = window.location.pathname === '/admin';
   
@@ -58,30 +80,10 @@ function App() {
         <section className="mb-8 reveal">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              <span 
-                className="inline-block overflow-hidden whitespace-nowrap border-r-2 sm:border-r-4 border-blue-600 animate-pulse"
-                style={{
-                  animation: 'typewriter 3s steps(20, end) infinite, blink 1s step-end infinite'
-                }}
-              >
-                Crystal clear windows
-              </span>
+              Window Cleaning in Melbourne
             </h1>
-            
-            <style>{`
-              @keyframes typewriter {
-                0% { width: 0; }
-                50% { width: 100%; }
-                100% { width: 100%; }
-              }
-              
-              @keyframes blink {
-                0%, 50% { border-color: transparent; }
-                51%, 100% { border-color: #2563eb; }
-              }
-            `}</style>
             <p className="mt-3 text-black/70 text-lg md:text-xl">
-              Book professional window cleaning online in minutes — no quotes, no hassle.
+              Book trusted, insured window cleaners online in seconds. No quotes, no hassle.
             </p>
           </div>
         </section>
@@ -103,140 +105,40 @@ function App() {
         </section>
 
 
-        {/* Pricing */}
-        <section id="pricing" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Window Cleaning Pricing</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 reveal-children">
-            
-            {/* Residential Homes (Inside & Out) */}
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">Residential Homes (Inside & Out)</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Apartment/Flat</span>
-                  <span className="font-semibold text-blue-600">$150</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Small Single-Storey (2-3 bed)</span>
-                  <span className="font-semibold text-blue-600">$200</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Large Single-Storey (4+ bed)</span>
-                  <span className="font-semibold text-blue-600">$270</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Two-Storey (3 bed)</span>
-                  <span className="font-semibold text-blue-600">$320</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Two-Storey (4+ bed)</span>
-                  <span className="font-semibold text-blue-600">$360</span>
-                </div>
-              </div>
-            </div>
 
-            {/* Residential Homes (Exterior Only) */}
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">Residential Homes (Exterior Only)</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Apartment/Flat Exterior</span>
-                  <span className="font-semibold text-blue-600">$90</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Small Home Exterior</span>
-                  <span className="font-semibold text-blue-600">$120</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Large Home Exterior</span>
-                  <span className="font-semibold text-blue-600">$162</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Two-Storey Exterior (3 bed)</span>
-                  <span className="font-semibold text-blue-600">$192</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Two-Storey Exterior (4+ bed)</span>
-                  <span className="font-semibold text-blue-600">$216</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Retail Storefronts */}
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">Retail Storefronts</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Small Shopfront (Outside Only)</span>
-                  <span className="font-semibold text-blue-600">From $25</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Shopfront (Inside & Outside)</span>
-                  <span className="font-semibold text-blue-600">From $35</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">One-off Deep Clean</span>
-                  <span className="font-semibold text-blue-600">From $60</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-          <p className="text-sm text-black/60 mt-4 text-center">All residential prices include inside & outside cleaning, frames, and sills. Exterior-only services are 60% of full pricing.</p>
-        </section>
-
-        {/* Areas */}
-        <section id="areas" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Australian Locations</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 reveal-children">
-            {[
-              { city: 'Sydney', cityAbbr: 'SYD', stateAbbr: 'NSW', state: 'New South Wales' },
-              { city: 'Melbourne', cityAbbr: 'MEL', stateAbbr: 'VIC', state: 'Victoria' },
-              { city: 'Brisbane', cityAbbr: 'BNE', stateAbbr: 'QLD', state: 'Queensland' },
-              { city: 'Perth', cityAbbr: 'PER', stateAbbr: 'WA', state: 'Western Australia' },
-              { city: 'Adelaide', cityAbbr: 'ADL', stateAbbr: 'SA', state: 'South Australia' },
-              { city: 'Canberra', cityAbbr: 'CBR', stateAbbr: 'ACT', state: 'Australian Capital Territory' },
-            ].map(({ city, stateAbbr, state }) => (
-              <div key={city} className="card p-4 flex flex-col items-center text-center hover:bg-black/[.03] transition-colors">
-                <div className="w-24 h-24 rounded-full border border-black/20 flex items-center justify-center bg-white text-black mb-2">
-                  <span className="font-semibold tracking-wide">{stateAbbr}</span>
-                </div>
-                <div className="font-medium">{city}</div>
-                <div className="text-xs text-black/60">{state}</div>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* FAQ */}
         <section id="faq" className="py-10 border-t border-black/10 reveal">
           <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">FAQ</h2>
           <div className="grid gap-3 reveal-children">
             <details className="card p-4">
+              <summary className="cursor-pointer font-medium">How long does a booking take?</summary>
+              <p className="text-sm text-black/70 mt-2">
+                A standard small home (2–3 bedrooms) takes around 1.5–2 hours. Larger homes or shopfronts may take longer depending on size.
+              </p>
+            </details>
+            <details className="card p-4">
+              <summary className="cursor-pointer font-medium">Can I reschedule or cancel?</summary>
+              <p className="text-sm text-black/70 mt-2">
+                Yes — rescheduling is free up to 24 hours before your booking. Cancellations within 24 hours may incur a small fee.
+              </p>
+            </details>
+            <details className="card p-4">
+              <summary className="cursor-pointer font-medium">Do you service all Melbourne suburbs?</summary>
+              <p className="text-sm text-black/70 mt-2">
+                Yes. We cover Melbourne CBD, North, South, East, West, and Bayside suburbs. Just enter your postcode when booking to confirm.
+              </p>
+            </details>
+            <details className="card p-4">
+              <summary className="cursor-pointer font-medium">Are your cleaners insured and police-checked?</summary>
+              <p className="text-sm text-black/70 mt-2">
+                Absolutely. Every TidyJacks cleaner is fully insured, background-checked, and police-verified for your peace of mind.
+              </p>
+            </details>
+            <details className="card p-4">
               <summary className="cursor-pointer font-medium">How does pricing work?</summary>
               <p className="text-sm text-black/70 mt-2">
-                We provide instant estimates online. Final pricing may vary slightly depending on property size, condition,
-                or special requests, but we'll always confirm before starting.
-              </p>
-            </details>
-            <details className="card p-4">
-              <summary className="cursor-pointer font-medium">Do I need to pay a deposit?</summary>
-              <p className="text-sm text-black/70 mt-2">
-                Yes, a small deposit secures your booking. You can choose to pay the balance later or pay in full upfront.
-                Deposits are refundable under our cancellation policy.
-              </p>
-            </details>
-            <details className="card p-4">
-              <summary className="cursor-pointer font-medium">What's included in window cleaning?</summary>
-              <p className="text-sm text-black/70 mt-2">
-                Complete window cleaning service includes inside and outside window cleaning, frames, sills, and screens.
-                We use professional-grade equipment and eco-friendly cleaning solutions for streak-free results.
-              </p>
-            </details>
-            <details className="card p-4">
-              <summary className="cursor-pointer font-medium">Are window cleaners insured and police‑checked?</summary>
-              <p className="text-sm text-black/70 mt-2">
-                Absolutely. All TidyJacks window cleaning professionals are vetted, insured, and police‑checked for your peace of mind.
+                Our prices are fixed upfront based on your property type and size — no hidden fees.
               </p>
             </details>
           </div>
@@ -246,7 +148,6 @@ function App() {
         <section className="py-8">
           <div className="rounded-2xl border border-black/10 bg-black/[.03] p-4 sm:p-6 text-sm text-black/80">
             <ul className="space-y-1">
-              <li><span className="font-medium">ABN:</span> Proudly registered in Australia (ABN 12 345 678 910)</li>
               <li><span className="font-medium">Insurance:</span> All TidyJacks cleaners are fully insured</li>
               <li><span className="font-medium">Police checks:</span> Every cleaner is vetted and background checked</li>
               <li><span className="font-medium">Workplace safety:</span> Following Australian WHS standards</li>
@@ -268,8 +169,6 @@ function App() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 text-sm text-black/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span>©2025 TidyJacks</span>
-            <a href="#" className="underline hover:no-underline">Terms</a>
-            <a href="#" className="underline hover:no-underline">Privacy</a>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
             <a href="#" aria-label="Facebook" className="group">

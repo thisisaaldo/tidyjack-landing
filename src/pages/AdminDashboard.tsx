@@ -23,7 +23,9 @@ interface Booking {
   payment_type: string;
   amount_paid_cents: number;
   payment_status: string;
+  job_status: string;
   stripe_payment_intent_id?: string;
+  completed_at?: string;
   created_at: string;
   customer?: Customer;
   remaining_balance_cents?: number;
@@ -46,7 +48,7 @@ const AdminDashboard = () => {
   const [authError, setAuthError] = useState('');
   
   const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'customers' | 'payments' | 'photos'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'customers' | 'payments' | 'photos' | 'done-jobs'>('overview');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -182,11 +184,12 @@ const AdminDashboard = () => {
     try {
       setPhotoMessage('Sending photos to customer...');
       
-      await apiCall('/photos/send-email', undefined, {
+      const response = await apiCall('/photos/send-email', undefined, {
         method: 'POST',
         body: JSON.stringify({ bookingId })
       });
       
+      console.log('Email send response:', response);
       setPhotoMessage('✅ Photos sent to customer successfully!');
       
       // Reset photo state after successful send
@@ -196,7 +199,14 @@ const AdminDashboard = () => {
         setPhotoMessage('');
       }, 3000);
     } catch (error) {
-      setPhotoMessage(`Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Email send error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setPhotoMessage(`❌ Failed to send email: ${errorMessage}`);
+      
+      // Keep error message visible longer
+      setTimeout(() => {
+        setPhotoMessage('');
+      }, 10000);
     }
   };
 
@@ -435,7 +445,8 @@ const AdminDashboard = () => {
                 { key: 'bookings', label: 'Bookings' },
                 { key: 'customers', label: 'Customers' },
                 { key: 'payments', label: 'Payments' },
-                { key: 'photos', label: '📸 Photos' }
+                { key: 'photos', label: '📸 Photos' },
+                { key: 'done-jobs', label: '✅ Done Jobs' }
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -467,7 +478,13 @@ const AdminDashboard = () => {
           <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
             <p className="text-red-600">{error}</p>
             <button
-              onClick={() => loadDashboardData()}
+              onClick={(e) => {
+                e.preventDefault();
+                const currentScrollY = window.scrollY;
+                loadDashboardData().then(() => {
+                  window.scrollTo(0, currentScrollY);
+                });
+              }}
               className="mt-3 min-h-[44px] px-4 py-2 text-sm text-red-700 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors font-medium"
             >
               🔄 Retry Loading
@@ -679,8 +696,31 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {/* Done Jobs Tab */}
+            {activeTab === 'done-jobs' && (
+              <div className="space-y-6">
+                <div className="bg-white shadow rounded-lg">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900">✅ Completed Jobs</h3>
+                    <p className="text-sm text-gray-500 mt-1">View all completed jobs with before/after photos</p>
+                  </div>
+                  
+                  <div className="p-6">
+                    <div className="text-center py-12">
+                      <div className="text-6xl mb-4">🎉</div>
+                      <h4 className="text-lg font-medium text-gray-900 mb-2">No completed jobs yet</h4>
+                      <p className="text-gray-500 mb-4">Complete your first job to see it here!</p>
+                      <p className="text-sm text-gray-400">
+                        Jobs will appear here once you mark them as completed and upload before/after photos.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Other tabs placeholder */}
-            {activeTab !== 'overview' && activeTab !== 'photos' && (
+            {activeTab !== 'overview' && activeTab !== 'photos' && activeTab !== 'done-jobs' && (
               <div className="text-center py-12">
                 <p className="text-gray-500">Dashboard feature coming soon...</p>
                 <p className="text-sm text-gray-400 mt-2">

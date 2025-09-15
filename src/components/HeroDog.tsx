@@ -67,7 +67,7 @@ export default function HeroDog() {
                 animation: 'typewriter 4s steps(16, end) infinite, blink 1s step-end infinite'
               }}
             >
-              G'day, I'm Jack!
+              G'day, I'm Jacks!
             </span>
           </div>
           <div className="absolute bottom-0 left-4 transform translate-y-1/2 w-3 h-3 bg-white border-r border-b border-black/10 rotate-45"></div>

@@ -98,4 +98,26 @@ export class BookingStorage {
       .where(sql`${bookings.total_amount_cents} > ${bookings.amount_paid_cents}`)
       .orderBy(desc(bookings.created_at));
   }
+
+  // Update job status
+  static async updateJobStatus(bookingId: number, updateData: any) {
+    return db
+      .update(bookings)
+      .set(updateData)
+      .where(eq(bookings.id, bookingId))
+      .returning();
+  }
+
+  // Get completed jobs
+  static async getCompletedJobs() {
+    return db
+      .select({
+        booking: bookings,
+        customer: customers
+      })
+      .from(bookings)
+      .leftJoin(customers, eq(bookings.customer_id, customers.id))
+      .where(eq(bookings.job_status, 'completed'))
+      .orderBy(desc(bookings.completed_at));
+  }
 }
