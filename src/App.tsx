@@ -185,28 +185,6 @@ function App() {
           <p className="text-sm text-black/60 mt-4 text-center">All residential prices include inside & outside cleaning, frames, and sills. Exterior-only services are 60% of full pricing.</p>
         </section>
 
-        {/* Areas */}
-        <section id="areas" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Australian Locations</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 reveal-children">
-            {[
-              { city: 'Sydney', cityAbbr: 'SYD', stateAbbr: 'NSW', state: 'New South Wales' },
-              { city: 'Melbourne', cityAbbr: 'MEL', stateAbbr: 'VIC', state: 'Victoria' },
-              { city: 'Brisbane', cityAbbr: 'BNE', stateAbbr: 'QLD', state: 'Queensland' },
-              { city: 'Perth', cityAbbr: 'PER', stateAbbr: 'WA', state: 'Western Australia' },
-              { city: 'Adelaide', cityAbbr: 'ADL', stateAbbr: 'SA', state: 'South Australia' },
-              { city: 'Canberra', cityAbbr: 'CBR', stateAbbr: 'ACT', state: 'Australian Capital Territory' },
-            ].map(({ city, stateAbbr, state }) => (
-              <div key={city} className="card p-4 flex flex-col items-center text-center hover:bg-black/[.03] transition-colors">
-                <div className="w-24 h-24 rounded-full border border-black/20 flex items-center justify-center bg-white text-black mb-2">
-                  <span className="font-semibold tracking-wide">{stateAbbr}</span>
-                </div>
-                <div className="font-medium">{city}</div>
-                <div className="text-xs text-black/60">{state}</div>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* FAQ */}
         <section id="faq" className="py-10 border-t border-black/10 reveal">
