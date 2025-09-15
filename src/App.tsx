@@ -81,7 +81,7 @@ function App() {
               }
             `}</style>
             <p className="mt-3 text-black/70 text-lg md:text-xl">
-              Book professional window cleaning online in minutes — no quotes, no hassle.
+              Book professional window cleaning online in seconds — no quotes, no hassle.
             </p>
           </div>
         </section>
