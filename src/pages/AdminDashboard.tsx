@@ -780,7 +780,6 @@ const AdminDashboard = () => {
                         </p>
                       </div>
                     )}
->>>>>>> cf356607c95fcea48007b8bb52ed1d937a767c51
                   </div>
                 </div>
               </div>
