@@ -10,7 +10,7 @@ export default function BookingForm() {
     email: '',
     phone: '',
     address: '',
-    service: 'small_home',
+    service: 'residential_single',
     date: '',
     slot: 'weekday_afternoon',
     notes: ''
@@ -23,14 +23,10 @@ export default function BookingForm() {
 
   // Service options with instant pricing
   const serviceOptions = [
-    { value: 'apartmentflat', label: 'Apartment/Flat', price: 150, description: 'Inside & outside windows' },
-    { value: 'small_home', label: 'Small Home (2-3 bed)', price: 200, description: 'Single-storey home' },
-    { value: 'large_home', label: 'Large Home (4+ bed)', price: 270, description: 'Single-storey home' },
-    { value: 'twostory_3bed', label: 'Two-Storey (3 bed)', price: 320, description: 'Two-storey home' },
-    { value: 'twostory_4bed', label: 'Two-Storey (4+ bed)', price: 360, description: 'Two-storey home' },
-    { value: 'small_shopfront', label: 'Small Shopfront', price: 25, description: 'Outside only' },
-    { value: 'shopfront_full', label: 'Shopfront Full', price: 35, description: 'Inside & outside' },
-    { value: 'deepclean', label: 'Deep Clean', price: 60, description: 'One-off service' }
+    { value: 'residential_single', label: 'Residential - Single Storey', price: 150, priceRange: '$150 - $600+', description: 'Standard maintenance clean' },
+    { value: 'residential_double', label: 'Residential - Double Storey', price: 200, priceRange: '$200 - $700+', description: 'Two-storey homes' },
+    { value: 'apartment_complex', label: 'Low-rise Apartment Complex', price: 300, priceRange: '$300 - $1,000+', description: 'Owners Corp buildings' },
+    { value: 'commercial', label: 'Commercial Window Cleaning', price: 150, priceRange: '$150 - $500+', description: 'Business premises' }
   ]
 
   const selectedService = serviceOptions.find(s => s.value === formData.service) || serviceOptions[1]
@@ -130,7 +126,7 @@ export default function BookingForm() {
                 >
                   <div className="font-medium text-gray-900">{service.label}</div>
                   <div className="text-sm text-gray-600 mt-1">{service.description}</div>
-                  <div className="text-lg font-bold text-blue-600 mt-2">${service.price} AUD</div>
+                  <div className="text-lg font-bold text-blue-600 mt-2">{service.priceRange}</div>
                 </button>
               ))}
             </div>
@@ -138,8 +134,8 @@ export default function BookingForm() {
 
           {/* Instant Quote Display */}
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 text-center">
-            <div className="text-sm text-gray-600 mb-1">Your Quote</div>
-            <div className="text-4xl font-bold text-blue-600 mb-2">${selectedService.price}</div>
+            <div className="text-sm text-gray-600 mb-1">Price Range</div>
+            <div className="text-3xl font-bold text-blue-600 mb-2">{selectedService.priceRange}</div>
             <div className="text-gray-700">{selectedService.label}</div>
             <div className="text-sm text-gray-600 mt-1">{selectedService.description}</div>
           </div>
@@ -149,8 +145,16 @@ export default function BookingForm() {
             onClick={() => setStep('booking')}
             className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 font-semibold"
           >
-            Book This Service - ${selectedService.price} AUD
+            Get Quote & Book
           </button>
+
+          {/* Pricing Disclaimer */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-xs text-gray-700">
+            <p className="font-medium text-yellow-800 mb-2">* Pricing Disclaimer</p>
+            <p className="leading-relaxed">
+              Price estimates are for a standard maintenance clean only and do not include costs for special conditions like post build cleaning, paint/sticky tape removal, calcium build up or any 'initial clean' procedures that may be required. Flyscreens are usually included in the standard residential quote, however, if there is an abundance, large sized, hard access, or very dirty flyscreens, extra charges apply. Our standard inclusion is for a wet wipe down; if a full screen wash is required this would be an extra $10 per flyscreen. Any glass louvres, colonial/french windows, leadlight/stained glass will incur extra charges (usually 30%+). Skylights, balustrades, roof windows, highlight windows, etc. have not been considered in the quick estimate, and will be quoted on visual inspection through Google Maps, photos, or a site visit.
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -170,7 +174,8 @@ export default function BookingForm() {
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Booking</h2>
         <div className="bg-blue-50 rounded-lg p-4 mb-4">
           <div className="text-lg font-semibold text-blue-800">{selectedService.label}</div>
-          <div className="text-2xl font-bold text-blue-600">${selectedService.price} AUD</div>
+          <div className="text-xl font-bold text-blue-600">{selectedService.priceRange}</div>
+          <div className="text-sm text-gray-600 mt-1">{selectedService.description}</div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -353,7 +358,7 @@ export default function BookingForm() {
               Confirming Booking...
             </span>
           ) : (
-            `Confirm Booking - $${selectedService.price} AUD`
+            `Confirm Booking Request`
           )}
         </button>
       </form>
