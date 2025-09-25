@@ -120,22 +120,22 @@ export default function BookingForm() {
                   onClick={() => setFormData({...formData, service: service.value})}
                   className={`p-4 rounded-lg border-2 text-left transition-all ${
                     formData.service === service.value
-                      ? 'border-blue-500 bg-blue-50 shadow-md'
+                      ? 'border-sky-500 bg-sky-50 shadow-md'
                       : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                   }`}
                 >
                   <div className="font-medium text-gray-900">{service.label}</div>
                   <div className="text-sm text-gray-600 mt-1">{service.description}</div>
-                  <div className="text-lg font-bold text-blue-600 mt-2">{service.priceRange}</div>
+                  <div className="text-lg font-bold text-sky-600 mt-2">{service.priceRange}</div>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Instant Quote Display */}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 text-center">
+          <div className="bg-gradient-to-r from-sky-50 to-blue-50 rounded-lg p-6 text-center">
             <div className="text-sm text-gray-600 mb-1">Price Range</div>
-            <div className="text-3xl font-bold text-blue-600 mb-2">{selectedService.priceRange}</div>
+            <div className="text-3xl font-bold text-sky-600 mb-2">{selectedService.priceRange}</div>
             <div className="text-gray-700">{selectedService.label}</div>
             <div className="text-sm text-gray-600 mt-1">{selectedService.description}</div>
           </div>
@@ -143,7 +143,7 @@ export default function BookingForm() {
           <button
             type="button"
             onClick={() => setStep('booking')}
-            className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 font-semibold"
+            className="w-full px-6 py-3 bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-lg hover:from-sky-500 hover:to-blue-600 transform hover:scale-105 transition-all duration-300 font-semibold"
           >
             Get Quote & Book
           </button>
@@ -167,14 +167,14 @@ export default function BookingForm() {
         <button
           type="button"
           onClick={() => setStep('quote')}
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4"
+          className="text-sky-600 hover:text-sky-700 text-sm font-medium mb-4"
         >
           ← Back to Quote
         </button>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Booking</h2>
-        <div className="bg-blue-50 rounded-lg p-4 mb-4">
-          <div className="text-lg font-semibold text-blue-800">{selectedService.label}</div>
-          <div className="text-xl font-bold text-blue-600">{selectedService.priceRange}</div>
+        <div className="bg-sky-50 rounded-lg p-4 mb-4">
+          <div className="text-lg font-semibold text-sky-800">{selectedService.label}</div>
+          <div className="text-xl font-bold text-sky-600">{selectedService.priceRange}</div>
           <div className="text-sm text-gray-600 mt-1">{selectedService.description}</div>
         </div>
 
@@ -190,7 +190,7 @@ export default function BookingForm() {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               placeholder="Your full name"
               required
             />
@@ -205,7 +205,7 @@ export default function BookingForm() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               placeholder="your@email.com"
               required
             />
@@ -239,7 +239,7 @@ export default function BookingForm() {
                 console.log('Selected place:', place)
               }}
               placeholder="Enter your address"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               apiKey={googleMapsApiKey}
               required
             />
@@ -250,7 +250,7 @@ export default function BookingForm() {
               name="address"
               value={formData.address}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               placeholder="Enter your address"
               required
             />
@@ -269,7 +269,7 @@ export default function BookingForm() {
               value={formData.date}
               onChange={handleChange}
               min={new Date().toISOString().split('T')[0]}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               required
             />
           </div>
@@ -282,7 +282,7 @@ export default function BookingForm() {
               name="slot"
               value={formData.slot}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
             >
               <option value="weekday_afternoon">Weekday Afternoon (3pm-6pm)</option>
               <option value="weekend_morning">Weekend Morning (8am-12pm)</option>
@@ -347,7 +347,7 @@ export default function BookingForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transform hover:scale-105 hover:shadow-lg transition-all duration-300 ease-in-out font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
+          className="w-full px-6 py-3 bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-lg hover:from-sky-600 hover:to-blue-700 transform hover:scale-105 hover:shadow-lg transition-all duration-300 ease-in-out font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center">

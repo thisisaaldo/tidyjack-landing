@@ -183,7 +183,7 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onPhotoCaptured, photoType,
                   className={`min-h-[56px] px-8 py-4 rounded-xl font-semibold text-lg transition-colors w-full ${
                     disabled
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+                      : 'bg-sky-500 text-white hover:bg-sky-600 active:bg-sky-700'
                   } flex items-center justify-center`}
                 >
                   📱 Open Camera App
@@ -207,7 +207,7 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onPhotoCaptured, photoType,
                 className={`min-h-[56px] px-8 py-4 rounded-xl font-semibold text-lg transition-colors w-full sm:w-auto ${
                   disabled
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+                    : 'bg-sky-500 text-white hover:bg-sky-600 active:bg-sky-700'
                 } flex items-center justify-center`}
               >
                 📸 Start Camera
@@ -262,7 +262,7 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({ onPhotoCaptured, photoType,
             </div>
             <button
               onClick={retakePhoto}
-              className="min-h-[56px] px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold text-lg hover:bg-blue-700 active:bg-blue-800 transition-colors w-full sm:w-auto flex items-center justify-center"
+              className="min-h-[56px] px-8 py-4 bg-sky-500 text-white rounded-xl font-semibold text-lg hover:bg-sky-600 active:bg-sky-700 transition-colors w-full sm:w-auto flex items-center justify-center"
             >
               🔄 Retake Photo
             </button>

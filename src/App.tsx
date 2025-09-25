@@ -61,10 +61,10 @@ function App() {
                   block: 'start'
                 });
               }}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 hover:shadow-lg transition-all duration-300 ease-in-out animate-pulse hover:animate-none relative overflow-hidden group"
+              className="px-6 py-3 bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-lg hover:from-sky-500 hover:to-blue-600 transform hover:scale-105 hover:shadow-lg transition-all duration-300 ease-in-out animate-pulse hover:animate-none relative overflow-hidden group"
             >
               <span className="relative z-10 font-semibold">Book Now</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-sky-300 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </button>
           </nav>
@@ -76,7 +76,7 @@ function App() {
                   block: 'start'
                 });
               }}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+              className="px-4 py-2 bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-lg text-sm font-medium hover:from-sky-500 hover:to-blue-600 transition-all duration-300"
             >
               Book Now
             </button>
@@ -88,7 +88,7 @@ function App() {
         {/* Marketing headline */}
         <section className="mb-8 reveal">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">
               Window Cleaning in Melbourne
             </h1>
             <p className="mt-3 text-black/70 text-lg md:text-xl">
@@ -115,7 +115,7 @@ function App() {
 
         {/* FAQ */}
         <section id="faq" className="py-10 border-t border-black/10 reveal">
-          <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">FAQ</h2>
+          <h2 className="font-display text-2xl font-semibold mb-4 bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">FAQ</h2>
           <div className="grid gap-3 reveal-children">
             <details className="card p-4">
               <summary className="cursor-pointer font-medium">How long does a booking take?</summary>
@@ -165,7 +165,7 @@ function App() {
         {/* CTA footer */}
         <section className="py-10 border-t border-black/10">
           <div className="text-center">
-            <h3 className="font-display text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TidyJacks — Australia's window cleaning experts</h3>
+            <h3 className="font-display text-xl sm:text-2xl font-semibold bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">TidyJacks — Australia's window cleaning experts</h3>
             <p className="mt-2 text-black/70">Book trusted, insured, and police-checked window cleaners in minutes.</p>
           </div>
         </section>

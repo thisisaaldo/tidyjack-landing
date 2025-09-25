@@ -73,7 +73,7 @@ const CheckoutForm = ({ amount, onPaymentSuccess, onPaymentError }: CheckoutForm
       <button
         type="submit"
         disabled={!stripe || isLoading}
-        className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+        className="w-full bg-sky-500 text-white py-3 px-6 rounded-lg hover:bg-sky-600 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         {isLoading ? (
           <span className="flex items-center justify-center">
@@ -136,7 +136,7 @@ export default function PaymentForm({ amount, bookingData, onPaymentSuccess, onP
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+        <div className="animate-spin w-8 h-8 border-4 border-sky-600 border-t-transparent rounded-full"></div>
         <span className="ml-3 text-gray-600">Preparing secure payment...</span>
       </div>
     );

@@ -378,7 +378,7 @@ const AdminDashboard = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
-            <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
+            <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-sky-100">
               <span className="text-2xl">🐾</span>
             </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -398,7 +398,7 @@ const AdminDashboard = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                className="relative block w-full min-h-[48px] px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 text-base"
+                className="relative block w-full min-h-[48px] px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 text-base"
                 placeholder="Enter admin password"
               />
             </div>
@@ -410,7 +410,7 @@ const AdminDashboard = () => {
             <div>
               <button
                 onClick={handleLogin}
-                className="group relative w-full flex justify-center min-h-[48px] py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="group relative w-full flex justify-center min-h-[48px] py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-sky-500 hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-400 transition-colors"
               >
                 Access Dashboard
               </button>
@@ -464,7 +464,7 @@ const AdminDashboard = () => {
                   onClick={() => setActiveTab(tab.key as any)}
                   className={`min-h-[48px] px-4 py-3 border-b-2 font-medium text-sm whitespace-nowrap flex items-center justify-center ${
                     activeTab === tab.key
-                      ? 'border-blue-500 text-blue-600 bg-blue-50'
+                      ? 'border-sky-500 text-sky-600 bg-sky-50'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50'
                   } transition-colors rounded-t-lg`}
                 >
@@ -480,7 +480,7 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {loading && (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600 mx-auto"></div>
             <p className="mt-2 text-gray-600">Loading dashboard data...</p>
           </div>
         )}
@@ -532,7 +532,7 @@ const AdminDashboard = () => {
                   </div>
                   <div className="bg-white p-6 rounded-lg shadow">
                     <h3 className="text-sm font-medium text-gray-500">Pending Revenue</h3>
-                    <p className="text-3xl font-bold text-blue-600">${dashboardData.pendingRevenue.toFixed(2)}</p>
+                    <p className="text-3xl font-bold text-sky-600">${dashboardData.pendingRevenue.toFixed(2)}</p>
                   </div>
                 </div>
 
@@ -575,7 +575,7 @@ const AdminDashboard = () => {
                       {dashboardData?.recentBookings && dashboardData.recentBookings.length > 0 ? (
                         <div className="space-y-4">
                           {dashboardData.recentBookings.map((booking) => (
-                            <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                            <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:border-sky-300 transition-colors">
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0 sm:space-x-4">
                                 <div className="flex-1">
                                   <p className="text-base font-medium text-gray-900">{booking.booking_id}</p>
@@ -588,7 +588,7 @@ const AdminDashboard = () => {
                                     setPhotoUploadState({ before: [], after: [] });
                                     setPhotoMessage('');
                                   }}
-                                  className="min-h-[48px] px-6 py-3 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 transition-colors w-full sm:w-auto flex items-center justify-center"
+                                  className="min-h-[48px] px-6 py-3 bg-sky-500 text-white rounded-lg text-base font-medium hover:bg-sky-600 transition-colors w-full sm:w-auto flex items-center justify-center"
                                 >
                                   📷 Take Photos
                                 </button>
@@ -605,7 +605,7 @@ const AdminDashboard = () => {
                       <div className="mb-6">
                         <button
                           onClick={() => setSelectedBooking(null)}
-                          className="min-h-[44px] px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-sm font-medium rounded-lg transition-colors flex items-center"
+                          className="min-h-[44px] px-4 py-2 text-sky-600 hover:text-sky-800 hover:bg-sky-50 text-sm font-medium rounded-lg transition-colors flex items-center"
                         >
                           ← Back to booking selection
                         </button>
@@ -621,7 +621,7 @@ const AdminDashboard = () => {
                             ? 'bg-green-50 border border-green-200 text-green-700'
                             : photoMessage.includes('Failed')
                               ? 'bg-red-50 border border-red-200 text-red-700'
-                              : 'bg-blue-50 border border-blue-200 text-blue-700'
+                              : 'bg-sky-50 border border-sky-200 text-sky-700'
                         }`}>
                           {photoMessage}
                         </div>
@@ -650,7 +650,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <button
                                   onClick={() => window.dispatchEvent(new CustomEvent('trigger-photo-capture', { detail: 'before' }))}
-                                  className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                  className="text-sm px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors font-medium"
                                 >
                                   📷 Add Another Before Photo
                                 </button>
@@ -692,9 +692,9 @@ const AdminDashboard = () => {
                       </div>
 
                       {photoUploadState.before.length > 0 && photoUploadState.after.length > 0 && (
-                        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                          <h4 className="text-blue-800 font-medium mb-3">🎉 Both photos captured!</h4>
-                          <p className="text-blue-700 text-sm mb-4">
+                        <div className="mt-6 bg-sky-50 border border-sky-200 rounded-lg p-4 text-center">
+                          <h4 className="text-sky-800 font-medium mb-3">🎉 Both photos captured!</h4>
+                          <p className="text-sky-700 text-sm mb-4">
                             Ready to send before and after photos to the customer.
                           </p>
                           <button

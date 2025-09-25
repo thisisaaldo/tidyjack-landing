@@ -2,7 +2,7 @@ export default function HeroDog() {
   return (
     <div className="grid grid-rows-2 gap-4 h-full">
       {/* Top card: image */}
-      <div className="h-full relative overflow-hidden reveal card bg-gradient-to-br from-blue-50 to-cyan-50">
+      <div className="h-full relative overflow-hidden reveal card bg-gradient-to-br from-sky-50 to-cyan-50">
         <div className="flex items-center justify-center h-full p-2 sm:p-4 relative">
           {/* Dog Image */}
           <img
@@ -112,7 +112,7 @@ export default function HeroDog() {
               <div className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
                 Afterpay Available
               </div>
-              <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+              <div className="px-3 py-1 bg-sky-100 text-sky-800 rounded-full text-xs font-medium">
                 Police Checked
               </div>
               <div className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
