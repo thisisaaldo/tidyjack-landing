@@ -94,8 +94,8 @@ export default function HeroDog() {
             <h3 className="font-display text-base sm:text-lg md:text-xl font-semibold">Cleaning made easy</h3>
             <ul className="mt-2 sm:mt-3 space-y-1 sm:space-y-2 text-xs sm:text-sm text-black/80">
               <li className="flex items-start gap-2"><span>✔</span><span>Book in under 60 seconds, no calls or quotes needed</span></li>
-              <li className="flex items-start gap-2"><span>✔</span><span>Instant online payment with Afterpay available</span></li>
-              <li className="flex items-start gap-2"><span>✔</span><span>Experienced, insured, and police-checked professionals</span></li>
+              <li className="flex items-start gap-2"><span>✔</span><span>Instant online payment</span></li>
+              <li className="flex items-start gap-2"><span>✔</span><span>Experienced local professionals</span></li>
               <li className="flex items-start gap-2"><span>✔</span><span>Notes & special requests welcome — we tailor to you</span></li>
               <li className="flex items-start gap-2"><span>✔</span><span>Satisfaction guarantee or we'll make it right</span></li>
               <li className="flex items-start gap-2"><span>✔</span><span>24/7 support team to help whenever you need</span></li>
@@ -106,20 +106,7 @@ export default function HeroDog() {
             </ul>
           </div>
           
-          {/* Trust badges */}
-          <div className="mt-4">
-            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-              <div className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                Afterpay Available
-              </div>
-              <div className="px-3 py-1 bg-sky-100 text-sky-800 rounded-full text-xs font-medium">
-                Police Checked
-              </div>
-              <div className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                Insured
-              </div>
-            </div>
-          </div>
+          {/* Trust badges removed as requested */}
         </div>
       </div>
     </div>
