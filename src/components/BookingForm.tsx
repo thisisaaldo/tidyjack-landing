@@ -149,8 +149,8 @@ export default function BookingForm() {
           </button>
 
           {/* Pricing Disclaimer */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-xs text-gray-700">
-            <p className="font-medium text-yellow-800 mb-2">* Pricing Disclaimer</p>
+          <div className="bg-gray-50 border border-black/10 rounded-lg p-4 text-xs text-black/70">
+            <p className="font-medium text-gray-800 mb-2">* Pricing Disclaimer</p>
             <p className="leading-relaxed">
               Price estimates are for a standard maintenance clean only and do not include costs for special conditions like post build cleaning, paint/sticky tape removal, calcium build up or any 'initial clean' procedures that may be required. Flyscreens are usually included in the standard residential quote, however, if there is an abundance, large sized, hard access, or very dirty flyscreens, extra charges apply. Our standard inclusion is for a wet wipe down; if a full screen wash is required this would be an extra $10 per flyscreen. Any glass louvres, colonial/french windows, leadlight/stained glass will incur extra charges (usually 30%+). Skylights, balustrades, roof windows, highlight windows, etc. have not been considered in the quick estimate, and will be quoted on visual inspection through Google Maps, photos, or a site visit.
             </p>
