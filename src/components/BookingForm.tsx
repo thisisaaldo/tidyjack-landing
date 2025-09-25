@@ -145,7 +145,7 @@ export default function BookingForm() {
             onClick={() => setStep('booking')}
             className="w-full px-6 py-3 bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-lg hover:from-sky-500 hover:to-blue-600 transform hover:scale-105 transition-all duration-300 font-semibold"
           >
-            Get Quote & Book
+            Book Now
           </button>
 
           {/* Pricing Disclaimer */}

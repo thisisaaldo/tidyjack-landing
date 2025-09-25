@@ -1,4 +1,22 @@
 export default function HeroDog() {
+  const bubbles = [
+    { size: 32, left: '6%',  top: '72%', duration: 18, delay: 0 },
+    { size: 18, left: '14%', top: '80%', duration: 14, delay: 0.6 },
+    { size: 22, left: '24%', top: '75%', duration: 20, delay: 1.2 },
+    { size: 36, left: '36%', top: '78%', duration: 22, delay: 0.9 },
+    { size: 26, left: '50%', top: '76%', duration: 19, delay: 1.5 },
+    { size: 20, left: '62%', top: '80%', duration: 16, delay: 0.3 },
+    { size: 34, left: '74%', top: '74%', duration: 21, delay: 1.1 },
+    { size: 20, left: '86%', top: '79%', duration: 17, delay: 0.7 },
+    { size: 38, left: '12%', top: '60%', duration: 24, delay: 1.7 },
+    { size: 16, left: '44%', top: '62%', duration: 15, delay: 0.2 },
+    { size: 24, left: '70%', top: '60%', duration: 20, delay: 1.4 },
+    { size: 18, left: '90%', top: '62%', duration: 16, delay: 0.8 },
+    { size: 14, left: '8%',  top: '56%', duration: 12, delay: 0.4 },
+    { size: 18, left: '32%', top: '58%', duration: 14, delay: 1.0 },
+    { size: 22, left: '58%', top: '58%', duration: 18, delay: 0.5 },
+    { size: 16, left: '80%', top: '56%', duration: 12, delay: 1.3 },
+  ]
   return (
     <div className="grid grid-rows-2 gap-4 h-full">
       {/* Top card: image */}
@@ -11,43 +29,27 @@ export default function HeroDog() {
             className="w-full h-full max-w-xs sm:max-w-none object-contain z-10"
           />
           
-          {/* Soft Translucent Bubbles */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Large soft bubble */}
-            <div 
-              className="absolute top-16 right-20 w-16 h-16 rounded-full opacity-30"
-              style={{
-                background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 50%, rgba(240,240,255,0.1) 100%)',
-                animation: 'float 4s ease-in-out infinite'
-              }}
-            ></div>
-            
-            {/* Medium soft bubble */}
-            <div 
-              className="absolute top-24 left-24 w-12 h-12 rounded-full opacity-25"
-              style={{
-                background: 'radial-gradient(circle at 25% 25%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.2) 60%, rgba(255,240,255,0.1) 100%)',
-                animation: 'float 3.5s ease-in-out infinite 0.5s'
-              }}
-            ></div>
-            
-            {/* Small soft bubble */}
-            <div 
-              className="absolute top-8 right-32 w-8 h-8 rounded-full opacity-35"
-              style={{
-                background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.15) 50%, rgba(240,255,255,0.05) 100%)',
-                animation: 'float 2.8s ease-in-out infinite 1s'
-              }}
-            ></div>
-            
-            {/* Another medium bubble */}
-            <div 
-              className="absolute top-20 left-40 w-10 h-10 rounded-full opacity-20"
-              style={{
-                background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.1) 70%, rgba(255,250,255,0.05) 100%)',
-                animation: 'float 3.2s ease-in-out infinite 1.5s'
-              }}
-            ></div>
+          {/* Soft Translucent Bubbles (above image) */}
+          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 30 }}>
+            {/* Animated bubbles rising and drifting */}
+            {bubbles.map((b, i) => (
+              <div
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  left: b.left,
+                  top: b.top,
+                  width: `${b.size}px`,
+                  height: `${b.size}px`,
+                  background:
+                    'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95) 0%, rgba(173,216,230,0.55) 45%, rgba(135,206,235,0.28) 65%, rgba(135,206,235,0.12) 100%)',
+                  boxShadow: 'inset 0 0 10px rgba(255,255,255,0.85), 0 4px 12px rgba(135,206,235,0.35)',
+                  opacity: 1,
+                  animation: `bubbleDrift ${b.duration}s ease-in-out ${b.delay}s infinite alternate, bubbleRise ${b.duration * 1.6}s linear ${b.delay}s infinite`,
+                  mixBlendMode: 'screen'
+                }}
+              />
+            ))}
           </div>
           
           <style>{`
