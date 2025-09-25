@@ -6,8 +6,8 @@ export default function HeroDog() {
         <div className="flex items-center justify-center h-full p-2 sm:p-4 relative">
           {/* Dog Image */}
           <img
-            src="/dog.png"
-            alt="TidyJacks dog illustration"
+            src="/Jacks.png"
+            alt="TidyJacks mascot"
             className="w-full h-full max-w-xs sm:max-w-none object-contain z-10"
           />
           
